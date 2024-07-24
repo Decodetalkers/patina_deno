@@ -5,7 +5,6 @@
  */
 // Utility functions
 //
-import "./globals.ts"
 let randRange = (a: number, b: number): number =>
   Math.round(Math.random() * (b - a) + a);
 const clamp = (x: number): number => (x >= 0 ? (x <= 255 ? x : 255) : 0);
@@ -325,8 +324,6 @@ const patina = (
         b,
       );
 
-      //let noise = randRange(0, _config.noise);
-      //noise *= noise < 0 ? _config.darkNoise : _config.lightNoise;
       data[p * 4] = yuv[0];
       data[p * 4 + 1] = yuv[1];
       data[p * 4 + 2] = yuv[2];
@@ -361,19 +358,6 @@ const patina = (
   return new TextEncoder().encode(message);
 };
 
-//const processImage = async (filePath: string, config: Config) => {
-//  const image = await loadImage(filePath);
-//  const app: App = {
-//    running: false,
-//    lastConfigString: "",
-//    output: "",
-//    current: 0,
-//    width: 0,
-//  };
-//  const buffer = patina(image, config, app);
-//  await Deno.writeFile("output.png", buffer!);
-//};
-
 const config: Config = {
   rand: false,
   preview: false,
@@ -400,7 +384,3 @@ const config: Config = {
   pop: 1,
   quality: 80,
 };
-
-console.log("ss")
-
-//await processImage("input.jpg", config);
