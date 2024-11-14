@@ -19,6 +19,28 @@ const rgb2yuv = (r: number, g: number, b: number): [number, number, number] => {
   return [y, u, v];
 };
 
+const yuv2rgb = (y: number, u: number, v: number) => {
+  let r, g, b;
+
+  r = y + 1.4075 * (v - 128);
+  g = y - 0.3455 * (u - 128) - (0.7169 * (v - 128));
+  b = y + 1.7790 * (u - 128);
+
+  r = Math.floor(r);
+  g = Math.floor(g);
+  b = Math.floor(b);
+
+  r = (r < 0) ? 0 : r;
+  r = (r > 255) ? 255 : r;
+
+  g = (g < 0) ? 0 : g;
+  g = (g > 255) ? 255 : g;
+
+  b = (b < 0) ? 0 : b;
+  b = (b > 255) ? 255 : b;
+
+  return [r, g, b];
+};
 const convolute = (pixels: ImageData, weights: number[]): ImageData => {
   const side = Math.round(Math.sqrt(weights.length));
   const halfSide = Math.floor(side / 2);
@@ -186,166 +208,224 @@ export function patina(
     randRange = () => 0;
   }
 
-  let _width = naturalWidth;
-  let _height = naturalHeight;
+  let width = naturalWidth;
+  let height = naturalHeight;
   const scale = naturalWidth / naturalHeight;
 
   if (config.preview) {
     if (scale > 1) {
       if (naturalWidth > config.maxWidth) {
-        _width = config.maxWidth;
-        _height = config.maxWidth / scale;
+        width = config.maxWidth;
+        height = config.maxWidth / scale;
       }
     } else {
       if (naturalHeight > config.maxWidth) {
-        _width = config.maxWidth * scale;
-        _height = config.maxWidth;
+        width = config.maxWidth * scale;
+        height = config.maxWidth;
       }
     }
   }
 
-  _width = Math.floor(_width / 100 * config.zoom);
-  _height = Math.floor(_height / 100 * config.zoom);
+  width = Math.floor(width / 100 * config.zoom);
+  height = Math.floor(height / 100 * config.zoom);
 
-  ctx.rect(0, 0, _width, _height);
-  ctx.fillStyle = "#FFF";
-  ctx.fill();
+  canvas.width = width;
+  canvas.height = height;
+  app.width == width;
 
-  if (config.mix === 1) {
-    ctx.drawImage(
-      imageEl,
-      0,
-      0,
-      naturalWidth,
-      naturalHeight,
-      0,
-      0,
-      _width,
-      _height,
-    );
-  } else {
-    const mixedWidth = _width / config.mix;
-    const mixedHeight = _height / config.mix;
-    ctx.drawImage(
-      imageEl,
-      0,
-      0,
-      naturalWidth,
-      naturalHeight,
-      (_width - mixedWidth) / 2,
-      (_height - mixedHeight) / 2,
-      mixedWidth,
-      mixedHeight,
-    );
-    ctx.drawImage(
-      canvas,
-      (_width - mixedWidth) / 2,
-      (_height - mixedHeight) / 2,
-      mixedWidth,
-      mixedHeight,
-      0,
-      0,
-      _width,
-      _height,
-    );
-  }
+  requestAnimationFrame((_) => {
+    ctx.rect(0, 0, width, height);
+    ctx.fillStyle = "#FFF";
+    ctx.fill();
 
-  const watermark = () => {
-    const randSize = randRange(0, 7);
-    let fontSize = 22 + randSize;
-    fontSize = _width / fontSize * config.watermarkSize;
+    if (config.mix === 1) {
+      ctx.drawImage(
+        imageEl,
+        0,
+        0,
+        naturalWidth,
+        naturalHeight,
+        0,
+        0,
+        width,
+        height,
+      );
+    } else {
+      const mixedWidth = width / config.mix;
+      const mixedHeight = height / config.mix;
+      ctx.drawImage(
+        imageEl,
+        0,
+        0,
+        naturalWidth,
+        naturalHeight,
+        (width - mixedWidth) / 2,
+        (height - mixedHeight) / 2,
+        mixedWidth,
+        mixedHeight,
+      );
+      ctx.drawImage(
+        canvas,
+        (width - mixedWidth) / 2,
+        (height - mixedHeight) / 2,
+        mixedWidth,
+        mixedHeight,
+        0,
+        0,
+        width,
+        height,
+      );
+    }
 
-    ctx.shadowColor = `rgba(0, 0, 0, ${config.watermarkShadowAlpha})`;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 1;
-    ctx.shadowBlur = 4;
-    ctx.font = `${fontSize}px/400 "PingFang SC","Microsoft YaHei",sans-serif`;
-    ctx.fillStyle = "#fff";
+    const watermark = () => {
+      const randSize = randRange(0, 7);
+      let fontSize = 22 + randSize;
+      fontSize = width / fontSize * config.watermarkSize;
 
-    const shift = fontSize / 2;
-    const watermarkPlan: Plain = {
-      align: "right",
-      left: _width - shift * 1.2 + randRange(-5, 5),
-      top: _height - shift + randRange(-5, 5),
+      ctx.shadowColor = `rgba(0, 0, 0, ${config.watermarkShadowAlpha})`;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 1;
+      ctx.shadowBlur = 4;
+      ctx.font = `${fontSize}px/400 "PingFang SC","Microsoft YaHei",sans-serif`;
+      ctx.fillStyle = "#fff";
+
+      const shift = fontSize / 2;
+      const watermarkPlan: Plain = {
+        align: "right",
+        left: width - shift * 1.2 + randRange(-5, 5),
+        top: height - shift + randRange(-5, 5),
+      };
+
+      ctx.textAlign = watermarkPlan.align;
+      ctx.textBaseline = "bottom";
+      ctx.fillText(
+        "@" + randName(config.userNames),
+        watermarkPlan.left,
+        watermarkPlan.top,
+      );
     };
 
-    ctx.textAlign = watermarkPlan.align;
-    ctx.textBaseline = "bottom";
-    ctx.fillText(
-      "@" + randName(config.userNames),
-      watermarkPlan.left,
-      watermarkPlan.top,
-    );
-  };
-
-  if (config.watermark) {
-    watermark();
-  }
-
-  if (config.green) {
-    const imageData = ctx.getImageData(0, 0, _width, _height);
-    const data = imageData.data;
-    for (let p = 0; p < data.length / 4; ++p) {
-      const r = data[p * 4];
-      const g = data[p * 4 + 1];
-      const b = data[p * 4 + 2];
-      const y = clamp((77 * r + 150 * g + 29 * b) >> 8);
-      const u = clampuv(((-43 * r - 85 * g + 128 * b) >> 8) - 1);
-      const v = clampuv(((128 * r - 107 * g - 21 * b) >> 8) - 1);
-      data[p * 4] = clamp((65536 * y + 91881 * v) >> 16);
-      data[p * 4 + 1] = clamp((65536 * y - 22553 * u - 46802 * v) >> 16);
-      data[p * 4 + 2] = clamp((65536 * y + 116130 * u) >> 16);
+    if (config.watermark) {
+      watermark();
     }
-    ctx.putImageData(imageData, 0, 0);
-  }
 
-  if (
-    config.lightNoise || config.darkNoise || config.contrast !== 1 ||
-    config.light !== 1 || config.g !== 0 || config.convoluteName
-  ) {
-    const imageData = ctx.getImageData(0, 0, _width, _height);
-    const data = imageData.data;
-    for (let p = 0; p < data.length / 4; ++p) {
-      const r = data[p * 4];
-      const g = data[p * 4 + 1];
-      const b = data[p * 4 + 2];
-      const yuv = rgb2yuv(
-        r,
-        g,
-        b,
-      );
-
-      data[p * 4] = yuv[0];
-      data[p * 4 + 1] = yuv[1];
-      data[p * 4 + 2] = yuv[2];
+    if (config.green) {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+      for (let p = 0; p < data.length / 4; ++p) {
+        const r = data[p * 4];
+        const g = data[p * 4 + 1];
+        const b = data[p * 4 + 2];
+        const y = clamp((77 * r + 150 * g + 29 * b) >> 8);
+        const u = clampuv(((-43 * r - 85 * g + 128 * b) >> 8) - 1);
+        const v = clampuv(((128 * r - 107 * g - 21 * b) >> 8) - 1);
+        data[p * 4] = clamp((65536 * y + 91881 * v) >> 16);
+        data[p * 4 + 1] = clamp((65536 * y - 22553 * u - 46802 * v) >> 16);
+        data[p * 4 + 2] = clamp((65536 * y + 116130 * u) >> 16);
+      }
+      ctx.putImageData(imageData, 0, 0);
     }
-    ctx.putImageData(imageData, 0, 0);
-  }
 
-  if (config.convoluteName) {
-    const imageData = ctx.getImageData(0, 0, _width, _height);
-    const convoluted = convolute(imageData, Convolutes[config.convoluteName]);
-    ctx.putImageData(convoluted, 0, 0);
-  }
+    if (
+      config.lightNoise || config.darkNoise || config.contrast !== 1 ||
+      config.light !== 1 || config.g !== 0 || config.convoluteName
+    ) {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const pixelData = imageData.data;
+      for (let p = 0; p < pixelData.length / 4; ++p) {
+        const r = pixelData[p * 4];
+        const g = pixelData[p * 4 + 1];
+        const b = pixelData[p * 4 + 2];
+        const yuv = rgb2yuv(
+          r,
+          g,
+          b,
+        );
 
-  if (config.pop) {
-    popCtx.drawImage(canvas, 0, 0);
-    const imageData = popCtx.getImageData(0, 0, _width, _height);
-    const data = imageData.data;
-    for (let p = 0; p < data.length / 4; ++p) {
-      const r = data[p * 4];
-      const g = data[p * 4 + 1];
-      const b = data[p * 4 + 2];
-      const [y, u, v] = rgb2yuv(r, g, b);
-      data[p * 4] = clamp(y + config.pop * (y - 128));
-      data[p * 4 + 1] = clamp(y + config.pop * (u - 128));
-      data[p * 4 + 2] = clamp(y + config.pop * (v - 128));
+        pixelData[p * 4] = yuv[0];
+        pixelData[p * 4 + 1] = yuv[1];
+        pixelData[p * 4 + 2] = yuv[2];
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      if (config.lightNoise) {
+        const halt = config.lightNoise / 2;
+        for (let i = 0; i < pixelData.length; i += 4) {
+          pixelData[i] = pixelData[i] +
+            (randRange(0, config.lightNoise) - halt); // * (255 - pixelData[i])/255;
+        }
+      }
+      if (config.darkNoise) {
+        const halt = config.darkNoise / 2;
+        for (let i = 0; i < pixelData.length; i += 4) {
+          pixelData[i] = pixelData[i] +
+            (randRange(0, config.darkNoise) - halt) * (255 - pixelData[i]) /
+              255;
+          //噪声在亮部不那么明显
+        }
+      }
+
+      //对比度
+      if (config.contrast !== 1) {
+        for (let i = 0; i < pixelData.length; i += 4) {
+          pixelData[i] = (pixelData[i] - 128) * config.contrast + 128;
+        }
+      }
+
+      //亮度
+      if (config.light !== 0) {
+        for (let i = 0; i < pixelData.length; i += 4) {
+          pixelData[i] = pixelData[i] + config.light * 128;
+        }
+      }
+      if (config.convoluteName) {
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const convoluted = convolute(
+          imageData,
+          Convolutes[config.convoluteName],
+        );
+        ctx.putImageData(convoluted, 0, 0);
+      }
+      for (let i = 0; i < pixelData.length; i += 4) {
+        //绿化
+        if (config.g) {
+          const gAdd = config.g * 4;
+          pixelData[i] -= gAdd * config.gy;
+          pixelData[i + 1] -= gAdd;
+          pixelData[i + 2] -= gAdd;
+        }
+
+        const rgb = yuv2rgb(
+          pixelData[i],
+          pixelData[i + 1],
+          pixelData[i + 2],
+        );
+
+        pixelData[i] = rgb[0];
+        pixelData[i + 1] = rgb[1];
+        pixelData[i + 2] = rgb[2];
+      }
+
+      if (config.pop) {
+        popCtx.drawImage(canvas, 0, 0);
+        const imageData = popCtx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+        for (let p = 0; p < data.length / 4; ++p) {
+          const r = data[p * 4];
+          const g = data[p * 4 + 1];
+          const b = data[p * 4 + 2];
+          const [y, u, v] = rgb2yuv(r, g, b);
+          data[p * 4] = clamp(y + config.pop * (y - 128));
+          data[p * 4 + 1] = clamp(y + config.pop * (u - 128));
+          data[p * 4 + 2] = clamp(y + config.pop * (v - 128));
+        }
+        popCtx.putImageData(imageData, 0, 0);
+      }
     }
-    popCtx.putImageData(imageData, 0, 0);
-  }
-
+  });
   app.running = false;
   const message = canvas.toDataURL();
+
   return new TextEncoder().encode(message);
 }
 
