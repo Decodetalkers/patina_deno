@@ -185,7 +185,7 @@ export function patina(
   imageEl: HTMLImageElement,
   config: Config,
   app: App,
-): Uint8Array | undefined {
+) {
   const naturalWidth = imageEl.naturalWidth;
   const naturalHeight = imageEl.naturalHeight;
 
@@ -305,11 +305,7 @@ export function patina(
       );
     };
 
-    if (config.watermark) {
-      watermark();
-    }
-
-    if (config.green) {
+    const green = () => {
       const imageData = ctx.getImageData(0, 0, width, height);
       const data = imageData.data;
       for (let p = 0; p < data.length / 4; ++p) {
@@ -324,6 +320,14 @@ export function patina(
         data[p * 4 + 2] = clamp((65536 * y + 116130 * u) >> 16);
       }
       ctx.putImageData(imageData, 0, 0);
+    };
+
+    if (config.watermark) {
+      watermark();
+    }
+
+    if (config.green) {
+      green();
     }
 
     if (
@@ -406,27 +410,139 @@ export function patina(
         pixelData[i + 2] = rgb[2];
       }
 
-      if (config.pop) {
-        popCtx.drawImage(canvas, 0, 0);
-        const imageData = popCtx.getImageData(0, 0, width, height);
-        const data = imageData.data;
-        for (let p = 0; p < data.length / 4; ++p) {
-          const r = data[p * 4];
-          const g = data[p * 4 + 1];
-          const b = data[p * 4 + 2];
-          const [y, u, v] = rgb2yuv(r, g, b);
-          data[p * 4] = clamp(y + config.pop * (y - 128));
-          data[p * 4 + 1] = clamp(y + config.pop * (u - 128));
-          data[p * 4 + 2] = clamp(y + config.pop * (v - 128));
+      let round = config.round;
+      let i = 1;
+      app.current = 1;
+
+      let popWidth = width * config.pop;
+      let popHeight = height * config.pop;
+
+      const isPop = config.pop;
+      if (isPop) {
+        round = Math.pow(config.pop, 2);
+        if (config.preview && width < config.maxWidth) {
+          const maxPopWidth = config.maxWidth * 2;
+
+          if (popWidth > maxPopWidth) {
+            popWidth = maxPopWidth;
+            popHeight = maxPopWidth * height / width;
+          }
         }
-        popCtx.putImageData(imageData, 0, 0);
+
+        const maxPopWidth = 4000;
+        if (popWidth > maxPopWidth) {
+          popWidth = maxPopWidth;
+          popHeight = maxPopWidth * height / width;
+        }
+
+        popCanvas.width = popWidth;
+        popCanvas.height = popHeight;
       }
+
+      const do_onetime = () => {
+        i++;
+        app.current++;
+        if (config.watermark) {
+          watermark();
+        }
+        if (config.green) {
+          green();
+        }
+
+        const src = canvas.toDataURL(
+          "image/jpeg",
+          config.quality / 100 + Math.random() * 0.1,
+        );
+
+        const imgEl = new Image();
+        imgEl.onload = (_) => {
+          const randi = 2;
+          const randPix = randRange(-randi, randi);
+          const randPiy = randRange(-randi, randi);
+
+          ctx.rect(0, 0, width, height);
+          ctx.fillStyle = "#FFF";
+          ctx.fill();
+
+          ctx.drawImage(
+            imgEl,
+            0,
+            0,
+            width,
+            height,
+            0 - randPix / 2,
+            0 - randPiy / 2,
+            width + randPix,
+            height + randPiy,
+          );
+
+          if (isPop) {
+            popCtx.drawImage(
+              imgEl,
+              (i - 1) % config.pop * popWidth / config.pop,
+              Math.floor((i - 1) / config.pop) * popHeight / config.pop,
+              popWidth / config.pop,
+              popHeight / config.pop,
+            );
+          }
+
+          app.output = src;
+
+          if (i < round) {
+            do_onetime();
+          } else {
+            app.running = false;
+            app.current = 0;
+
+            if (isPop) {
+              app.output = popCanvas.toDataURL(
+                "image/jpeg",
+                config.quality / 100 + Math.random() * 0.05,
+              );
+            }
+          }
+        };
+      };
+      const src = canvas.toDataURL(
+        "image/jpeg",
+        config.quality / 100 + Math.random() * 0.05,
+      );
+      const imgEl = new Image();
+
+      imgEl.onload = (_) => {
+        // console.log(/原本执行那一次质量调整/,i)
+
+        ctx.drawImage(
+          imgEl,
+          0,
+          0,
+          width,
+          height,
+        );
+
+        if (isPop) {
+          popCtx.drawImage(
+            imgEl,
+            0,
+            0,
+            popWidth / config.pop,
+            popHeight / config.pop,
+          );
+        }
+
+        app.output = src;
+
+        if (round === 1) {
+          app.running = false;
+          app.current = 0;
+        } else {
+          do_onetime();
+        }
+      };
+      imgEl.src = src;
+      app.output = src;
     }
   });
-  app.running = false;
-  const message = canvas.toDataURL();
-
-  return new TextEncoder().encode(message);
 }
 
 export const defaultConfig: Config = {
