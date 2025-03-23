@@ -77,50 +77,27 @@ const convolute = (pixels: ImageData, weights: number[]): ImageData => {
   return output;
 };
 
+// deno-fmt-ignore
 export const Convolutes = {
   "right": [
-    0,
-    -1,
-    0,
-    -1,
-    2,
-    2,
-    0,
-    -1,
-    0,
+    0, -1, 0,
+    -1, 2, 2,
+    0, -1, 0,
   ],
   "left": [
-    0,
-    -1,
-    0,
-    3,
-    2,
-    -2,
-    0,
-    -1,
-    0,
+    0, -1, 0,
+    3, 2, -2,
+    0, -1, 0,
   ],
   "sauna": [
-    1 / 9,
-    1 / 9,
-    1 / 9,
-    1 / 9,
-    1 / 9,
-    1 / 9,
-    1 / 9,
-    1 / 9,
-    1 / 9,
+    1 / 9, 1 / 9, 1 / 9,
+    1 / 9, 1 / 9, 1 / 9,
+    1 / 9, 1 / 9, 1 / 9,
   ],
   "relief": [
-    1,
-    1,
-    1,
-    1,
-    1,
-    -1,
-    -1,
-    -1,
-    -1,
+    1, 1, 1,
+    1, 1, -1,
+    -1, -1, -1,
   ],
 };
 
@@ -382,6 +359,7 @@ export function patina(
           pixelData[i] = pixelData[i] + config.light * 128;
         }
       }
+
       if (config.convoluteName) {
         const imageData = ctx.getImageData(0, 0, width, height);
         const convoluted = convolute(
