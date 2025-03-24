@@ -139,7 +139,7 @@ export type Size = {
 };
 
 export class PantaData {
-  img?: HTMLImageElement;
+  img: HTMLImageElement;
   _output?: string;
   running: boolean = false;
   width?: number;
@@ -160,7 +160,7 @@ export class PantaData {
     ).replace(/_/g, () => k);
   };
   constructor(img?: HTMLImageElement) {
-    this.img = img;
+    this.img = img || new Image();
     this.canvas = document.createElement("canvas");
     this.popCanvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d")!;
@@ -171,12 +171,16 @@ export class PantaData {
     return this._output;
   }
 
-  get image(): HTMLImageElement | undefined {
+  get image(): HTMLImageElement {
     return this.img;
   }
 
   set image(img: HTMLImageElement) {
     this.img = img;
+  }
+
+  setImageSrc(src: string) {
+    this.img.src = src;
   }
 
   private drawMix(canvasSize: Size, naturalSize: Size, mix: number) {
@@ -348,7 +352,7 @@ export class PantaData {
     );
   }
 
-  public patina(config: PaintConfig) {
+  public patina(config: PaintConfig, callback?: () => void) {
     const imageEl = this.img;
     if (!imageEl) {
       return;
@@ -428,7 +432,7 @@ export class PantaData {
         );
         const imgElNew = new Image();
 
-        imageEl.onload = (_) => {
+        imgElNew.onload = (_) => {
           const randi = 2;
           const randPix = this.randRange(-randi, randi);
           const randPiy = this.randRange(-randi, randi);
@@ -449,6 +453,7 @@ export class PantaData {
             height + randPiy,
           );
           this._output = src;
+          callback && callback();
           if (this.currentTime < config.yearsAgo) {
             requestOnce();
           } else {
@@ -456,7 +461,7 @@ export class PantaData {
             this.currentTime = 0;
           }
         };
-        imageEl.src = src;
+        imgElNew.src = src;
       };
 
       requestOnce();
@@ -482,7 +487,7 @@ export const defaultConfig: PaintConfig = {
   green: 0.5,
   gy: 0.5,
   convoluteName: "sauna",
-  yearsAgo: 0,
+  yearsAgo: 30,
   //isPop: false,
   //pop: 1,
   quality: 80,
