@@ -5,8 +5,6 @@
  */
 // Utility functions
 //
-let randRange = (a: number, b: number): number =>
-  Math.round(Math.random() * (b - a) + a);
 const clamp = (x: number): number => (x >= 0 ? (x <= 255 ? x : 255) : 0);
 const clampuv = (
   x: number,
@@ -103,44 +101,6 @@ export const Convolutes = {
 
 export type ConvoluteKey = keyof typeof Convolutes;
 
-const randName = (userNames: string[]): string => {
-  const k = "-_+~!^&、.。”“\"'|"[randRange(0, 14)];
-  return userNames[randRange(0, userNames.length - 1)].replace(
-    /\d\d\d\d/,
-    () => randRange(0, 9999).toString(),
-  ).replace(/_/g, () => k);
-};
-
-const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d")!;
-
-interface Config {
-  rand: boolean;
-  preview: boolean;
-  maxWidth: number;
-  zoom: number;
-  shiftx: number;
-  shifty: number;
-  mix: number;
-  watermark: boolean;
-  watermarkSize: number;
-  watermarkShadowAlpha: number;
-  watermarkPlan: number;
-  userNames: string[];
-  green: boolean;
-  lightNoise: number;
-  darkNoise: number;
-  contrast: number;
-  light: number;
-  g: number;
-  gy: number;
-  convoluteName: ConvoluteKey;
-  round: number;
-  isPop: boolean;
-  pop: number;
-  quality: number;
-}
-
 type Plain = {
   align: CanvasTextAlign;
   left: number;
@@ -160,11 +120,17 @@ type PaintConfig = {
   watermarkSize: number;
   watermarkShadowAlpha: number;
 
-  green: boolean;
+  green?: number;
+  gy: number;
   userNames: string[];
 
   quality: number;
   convoluteName?: ConvoluteKey;
+
+  lightNoise?: number;
+  darkNoise?: number;
+  contrast?: number;
+  light?: number;
 };
 
 export type Size = {
@@ -186,12 +152,19 @@ export class PantaData {
 
   private randRange = (a: number, b: number): number =>
     Math.round(Math.random() * (b - a) + a);
+  private randName = (userNames: string[]): string => {
+    const k = "-_+~!^&、.。”“\"'|"[this.randRange(0, 14)];
+    return userNames[this.randRange(0, userNames.length - 1)].replace(
+      /\d\d\d\d/,
+      () => this.randRange(0, 9999).toString(),
+    ).replace(/_/g, () => k);
+  };
   constructor(img?: HTMLImageElement) {
     this.img = img;
     this.canvas = document.createElement("canvas");
     this.popCanvas = document.createElement("canvas");
-    this.ctx = canvas.getContext("2d")!;
-    this.popCtx = canvas.getContext("2d")!;
+    this.ctx = this.canvas.getContext("2d")!;
+    this.popCtx = this.popCanvas.getContext("2d")!;
   }
 
   get output(): string | undefined {
@@ -249,15 +222,7 @@ export class PantaData {
     }
   }
 
-  private drawConVulateWithName(name: ConvoluteKey, { width, height }: Size) {
-    let pixel = this.ctx.getImageData(0, 0, width, height);
-
-    pixel = convolute(pixel, Convolutes[name]);
-
-    this.ctx.putImageData(pixel, 0, 0);
-  }
-
-  private drawGreen({ width, height }: Size) {
+  private drawGreenBase({ width, height }: Size) {
     const imageData = this.ctx.getImageData(0, 0, width, height);
     const data = imageData.data;
     for (let p = 0; p < data.length / 4; ++p) {
@@ -272,6 +237,86 @@ export class PantaData {
       data[p * 4 + 2] = clamp((65536 * y + 116130 * u) >> 16);
     }
     this.ctx.putImageData(imageData, 0, 0);
+  }
+
+  private drawOthers(
+    { width, height }: Size,
+    config: PaintConfig,
+  ) {
+    let pixel = this.ctx.getImageData(0, 0, width, height);
+    let pixelData = pixel.data;
+    for (let i = 0; i < pixelData.length; i += 4) {
+      const yuv = rgb2yuv(
+        pixelData[i],
+        pixelData[i + 1],
+        pixelData[i + 2],
+      );
+
+      pixelData[i] = yuv[0];
+      pixelData[i + 1] = yuv[1];
+      pixelData[i + 2] = yuv[2];
+    }
+
+    if (config.lightNoise) {
+      const halt = config.lightNoise / 2;
+      for (let i = 0; i < pixelData.length; i += 4) {
+        pixelData[i] = pixelData[i] +
+          (this.randRange(0, config.lightNoise) - halt); // * (255 - pixelData[i])/255;
+      }
+    }
+    if (config.darkNoise) {
+      const halt = config.darkNoise / 2;
+      for (let i = 0; i < pixelData.length; i += 4) {
+        pixelData[i] = pixelData[i] +
+          (this.randRange(0, config.darkNoise) - halt) * (255 - pixelData[i]) /
+            255;
+        //噪声在亮部不那么明显
+      }
+    }
+    //对比度
+    if (config.contrast && config.contrast != 1) {
+      for (let i = 0; i < pixelData.length; i += 4) {
+        pixelData[i] = (pixelData[i] - 128) * config.contrast + 128;
+      }
+    }
+
+    //亮度
+    if (config.light && config.light != 0) {
+      for (let i = 0; i < pixelData.length; i += 4) {
+        pixelData[i] = pixelData[i] + config.light * 128;
+      }
+    }
+
+    //卷积
+    if (config.convoluteName) {
+      pixel = convolute(
+        pixel,
+        Convolutes[config.convoluteName],
+      );
+      pixelData = pixel.data;
+    }
+
+    for (let i = 0; i < pixelData.length; i += 4) {
+      //绿化
+      if (config.green) {
+        const gAdd = config.green * 4;
+        pixelData[i] -= gAdd * config.gy;
+        pixelData[i + 1] -= gAdd;
+        pixelData[i + 2] -= gAdd;
+      }
+
+      const rgb = yuv2rgb(
+        pixelData[i],
+        pixelData[i + 1],
+        pixelData[i + 2],
+      );
+
+      pixelData[i] = rgb[0];
+      pixelData[i + 1] = rgb[1];
+      pixelData[i + 2] = rgb[2];
+    }
+
+    this.ctx.putImageData(pixel, 0, 0);
   }
 
   private drawWaterMark(config: PaintConfig, { width, height }: Size) {
@@ -290,14 +335,14 @@ export class PantaData {
     const shift = fontSize / 2;
     const watermarkPlan: Plain = {
       align: "right",
-      left: width - shift * 1.2 + randRange(-5, 5),
-      top: height - shift + randRange(-5, 5),
+      left: width - shift * 1.2 + this.randRange(-5, 5),
+      top: height - shift + this.randRange(-5, 5),
     };
 
     this.ctx.textAlign = watermarkPlan.align;
     this.ctx.textBaseline = "bottom";
     this.ctx.fillText(
-      "@" + randName(config.userNames),
+      "@" + this.randName(config.userNames),
       watermarkPlan.left,
       watermarkPlan.top,
     );
@@ -348,9 +393,9 @@ export class PantaData {
 
     // prepare is finished, then we need to transform the output
     requestAnimationFrame((_) => {
-      ctx.rect(0, 0, width, height);
-      ctx.fillStyle = "#FFF";
-      ctx.fill();
+      this.ctx.rect(0, 0, width, height);
+      this.ctx.fillStyle = "#FFF";
+      this.ctx.fill();
 
       // first we drawMix
       this.drawMix({ width, height }, {
@@ -358,8 +403,15 @@ export class PantaData {
         height: naturalHeight,
       }, config.mix);
 
-      if (config.convoluteName) {
-        this.drawConVulateWithName(config.convoluteName, { width, height });
+      if (
+        config.lightNoise ||
+        config.darkNoise ||
+        config.contrast !== 1 ||
+        config.light !== 0 ||
+        config.green !== 0 ||
+        config.convoluteName
+      ) {
+        this.drawOthers({ width, height }, config);
       }
 
       const requestOnce = () => {
@@ -368,7 +420,7 @@ export class PantaData {
           this.drawWaterMark(config, { width, height });
         }
         if (config.green) {
-          this.drawGreen({ width, height });
+          this.drawGreenBase({ width, height });
         }
         const src = this.canvas.toDataURL(
           "image/jpeg",
@@ -381,9 +433,9 @@ export class PantaData {
           const randPix = this.randRange(-randi, randi);
           const randPiy = this.randRange(-randi, randi);
 
-          ctx.rect(0, 0, width, height);
-          ctx.fillStyle = "#FFF";
-          ctx.fill();
+          this.ctx.rect(0, 0, width, height);
+          this.ctx.fillStyle = "#FFF";
+          this.ctx.fill();
 
           this.ctx.drawImage(
             imgElNew,
@@ -412,29 +464,26 @@ export class PantaData {
   }
 }
 
-export const defaultConfig: Config = {
+export const defaultConfig: PaintConfig = {
   rand: false,
   preview: false,
   maxWidth: 800,
   zoom: 100,
-  shiftx: 0,
-  shifty: 0,
   mix: 1,
   watermark: false,
   watermarkSize: 12,
   watermarkShadowAlpha: 0.5,
-  watermarkPlan: 1,
+  //watermarkPlan: 1,
   userNames: ["JohnDoe", "JaneDoe"],
-  green: false,
   lightNoise: 5,
   darkNoise: 5,
   contrast: 0.5,
   light: 0.5,
-  g: 0.5,
+  green: 0.5,
   gy: 0.5,
   convoluteName: "sauna",
-  round: 0,
-  isPop: false,
-  pop: 1,
+  yearsAgo: 0,
+  //isPop: false,
+  //pop: 1,
   quality: 80,
 };
