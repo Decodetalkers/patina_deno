@@ -1,4 +1,9 @@
 {
+  "name": "@nobody/patina_deno",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./mod.ts"
+  },
   "compilerOptions": {
     "lib": [
       "deno.ns",
@@ -10,7 +15,7 @@
     ]
   },
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "dev": "deno run --watch mod.ts"
   },
   "imports": {
     "@std/fs": "jsr:@std/fs@^0.229.3"
