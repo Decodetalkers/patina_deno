@@ -114,9 +114,6 @@ const randName = (userNames: string[]): string => {
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d")!;
 
-const popCanvas = document.createElement("canvas");
-const popCtx = popCanvas.getContext("2d")!;
-
 interface Config {
   rand: boolean;
   preview: boolean;
@@ -144,80 +141,77 @@ interface Config {
   quality: number;
 }
 
-interface App {
-  running: boolean;
-  width: number;
-  current: number;
-  output: string;
-  lastConfigString: string | null;
-}
-
 type Plain = {
   align: CanvasTextAlign;
   left: number;
   top: number;
 };
 
-export function patina(
-  imageEl: HTMLImageElement,
-  config: Config,
-  app: App,
-) {
-  const naturalWidth = imageEl.naturalWidth;
-  const naturalHeight = imageEl.naturalHeight;
+type PaintConfig = {
+  usePopUp?: boolean;
+  popUp?: number;
+  yearsAgo: number;
+  rand: boolean;
+  maxWidth: number;
+  preview: boolean;
+  zoom: number;
+  mix: number;
+  watermark: boolean;
+  watermarkSize: number;
+  watermarkShadowAlpha: number;
 
-  const configString = [
-    JSON.stringify(config),
-    imageEl.src,
-    naturalWidth,
-  ].join("-");
+  green: boolean;
+  userNames: string[];
 
-  if (!naturalWidth) return;
-  if (app.lastConfigString === configString) return;
-  if (app.running) return;
+  quality: number;
+  convoluteName?: ConvoluteKey;
+};
 
-  app.running = true;
-  app.lastConfigString = configString;
+export type Size = {
+  width: number;
+  height: number;
+};
 
-  if (config.rand) {
-    randRange = (a, b) => Math.round(Math.random() * (b - a) + a);
-  } else {
-    randRange = () => 0;
+export class PantaData {
+  img?: HTMLImageElement;
+  _output?: string;
+  running: boolean = false;
+  width?: number;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  popCanvas: HTMLCanvasElement;
+  popCtx: CanvasRenderingContext2D;
+
+  currentTime: number = 0;
+
+  private randRange = (a: number, b: number): number =>
+    Math.round(Math.random() * (b - a) + a);
+  constructor(img?: HTMLImageElement) {
+    this.img = img;
+    this.canvas = document.createElement("canvas");
+    this.popCanvas = document.createElement("canvas");
+    this.ctx = canvas.getContext("2d")!;
+    this.popCtx = canvas.getContext("2d")!;
   }
 
-  let width = naturalWidth;
-  let height = naturalHeight;
-  const scale = naturalWidth / naturalHeight;
-
-  if (config.preview) {
-    if (scale > 1) {
-      if (naturalWidth > config.maxWidth) {
-        width = config.maxWidth;
-        height = config.maxWidth / scale;
-      }
-    } else {
-      if (naturalHeight > config.maxWidth) {
-        width = config.maxWidth * scale;
-        height = config.maxWidth;
-      }
-    }
+  get output(): string | undefined {
+    return this._output;
   }
 
-  width = Math.floor(width / 100 * config.zoom);
-  height = Math.floor(height / 100 * config.zoom);
+  get image(): HTMLImageElement | undefined {
+    return this.img;
+  }
 
-  canvas.width = width;
-  canvas.height = height;
-  app.width == width;
+  set image(img: HTMLImageElement) {
+    this.img = img;
+  }
 
-  requestAnimationFrame((_) => {
-    ctx.rect(0, 0, width, height);
-    ctx.fillStyle = "#FFF";
-    ctx.fill();
-
-    if (config.mix === 1) {
-      ctx.drawImage(
-        imageEl,
+  private drawMix(canvasSize: Size, naturalSize: Size, mix: number) {
+    const { width, height } = canvasSize;
+    const { width: naturalWidth, height: naturalHeight } = naturalSize;
+    if (mix === 1) {
+      this.ctx.drawImage(
+        this.img!,
         0,
         0,
         naturalWidth,
@@ -228,10 +222,10 @@ export function patina(
         height,
       );
     } else {
-      const mixedWidth = width / config.mix;
-      const mixedHeight = height / config.mix;
-      ctx.drawImage(
-        imageEl,
+      const mixedWidth = width / mix;
+      const mixedHeight = height / mix;
+      this.ctx.drawImage(
+        this.img!,
         0,
         0,
         naturalWidth,
@@ -241,8 +235,8 @@ export function patina(
         mixedWidth,
         mixedHeight,
       );
-      ctx.drawImage(
-        canvas,
+      this.ctx.drawImage(
+        this.canvas,
         (width - mixedWidth) / 2,
         (height - mixedHeight) / 2,
         mixedWidth,
@@ -253,197 +247,146 @@ export function patina(
         height,
       );
     }
+  }
 
-    const watermark = () => {
-      const randSize = randRange(0, 7);
-      let fontSize = 22 + randSize;
-      fontSize = width / fontSize * config.watermarkSize;
+  private drawConVulateWithName(name: ConvoluteKey, { width, height }: Size) {
+    let pixel = this.ctx.getImageData(0, 0, width, height);
 
-      ctx.shadowColor = `rgba(0, 0, 0, ${config.watermarkShadowAlpha})`;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 1;
-      ctx.shadowBlur = 4;
-      ctx.font = `${fontSize}px/400 "PingFang SC","Microsoft YaHei",sans-serif`;
-      ctx.fillStyle = "#fff";
+    pixel = convolute(pixel, Convolutes[name]);
 
-      const shift = fontSize / 2;
-      const watermarkPlan: Plain = {
-        align: "right",
-        left: width - shift * 1.2 + randRange(-5, 5),
-        top: height - shift + randRange(-5, 5),
-      };
+    this.ctx.putImageData(pixel, 0, 0);
+  }
 
-      ctx.textAlign = watermarkPlan.align;
-      ctx.textBaseline = "bottom";
-      ctx.fillText(
-        "@" + randName(config.userNames),
-        watermarkPlan.left,
-        watermarkPlan.top,
-      );
+  private drawGreen({ width, height }: Size) {
+    const imageData = this.ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    for (let p = 0; p < data.length / 4; ++p) {
+      const r = data[p * 4];
+      const g = data[p * 4 + 1];
+      const b = data[p * 4 + 2];
+      const y = clamp((77 * r + 150 * g + 29 * b) >> 8);
+      const u = clampuv(((-43 * r - 85 * g + 128 * b) >> 8) - 1);
+      const v = clampuv(((128 * r - 107 * g - 21 * b) >> 8) - 1);
+      data[p * 4] = clamp((65536 * y + 91881 * v) >> 16);
+      data[p * 4 + 1] = clamp((65536 * y - 22553 * u - 46802 * v) >> 16);
+      data[p * 4 + 2] = clamp((65536 * y + 116130 * u) >> 16);
+    }
+    this.ctx.putImageData(imageData, 0, 0);
+  }
+
+  private drawWaterMark(config: PaintConfig, { width, height }: Size) {
+    const randSize = this.randRange(0, 7);
+    let fontSize = 22 + randSize;
+    fontSize = width / fontSize * config.watermarkSize;
+
+    this.ctx.shadowColor = `rgba(0, 0, 0, ${config.watermarkShadowAlpha})`;
+    this.ctx.shadowOffsetX = 0;
+    this.ctx.shadowOffsetY = 1;
+    this.ctx.shadowBlur = 4;
+    this.ctx.font =
+      `${fontSize}px/400 "PingFang SC","Microsoft YaHei",sans-serif`;
+    this.ctx.fillStyle = "#fff";
+
+    const shift = fontSize / 2;
+    const watermarkPlan: Plain = {
+      align: "right",
+      left: width - shift * 1.2 + randRange(-5, 5),
+      top: height - shift + randRange(-5, 5),
     };
 
-    const green = () => {
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const data = imageData.data;
-      for (let p = 0; p < data.length / 4; ++p) {
-        const r = data[p * 4];
-        const g = data[p * 4 + 1];
-        const b = data[p * 4 + 2];
-        const y = clamp((77 * r + 150 * g + 29 * b) >> 8);
-        const u = clampuv(((-43 * r - 85 * g + 128 * b) >> 8) - 1);
-        const v = clampuv(((128 * r - 107 * g - 21 * b) >> 8) - 1);
-        data[p * 4] = clamp((65536 * y + 91881 * v) >> 16);
-        data[p * 4 + 1] = clamp((65536 * y - 22553 * u - 46802 * v) >> 16);
-        data[p * 4 + 2] = clamp((65536 * y + 116130 * u) >> 16);
-      }
-      ctx.putImageData(imageData, 0, 0);
-    };
+    this.ctx.textAlign = watermarkPlan.align;
+    this.ctx.textBaseline = "bottom";
+    this.ctx.fillText(
+      "@" + randName(config.userNames),
+      watermarkPlan.left,
+      watermarkPlan.top,
+    );
+  }
 
-    if (config.watermark) {
-      watermark();
+  public patina(config: PaintConfig) {
+    const imageEl = this.img;
+    if (!imageEl) {
+      return;
+    }
+    // because last config is still doing
+    if (this.running) {
+      return;
     }
 
-    if (config.green) {
-      green();
+    const naturalWidth = imageEl.naturalWidth;
+    const naturalHeight = imageEl.naturalHeight;
+
+    let width = naturalWidth;
+    let height = naturalHeight;
+    if (config.rand) {
+      this.randRange = (a, b) => Math.round(Math.random() * (b - a) + a);
+    } else {
+      this.randRange = () => 0;
     }
 
-    if (
-      config.lightNoise || config.darkNoise || config.contrast !== 1 ||
-      config.light !== 1 || config.g !== 0 || config.convoluteName
-    ) {
-      const imageData = ctx.getImageData(0, 0, width, height);
-      const pixelData = imageData.data;
-      for (let p = 0; p < pixelData.length / 4; ++p) {
-        const r = pixelData[p * 4];
-        const g = pixelData[p * 4 + 1];
-        const b = pixelData[p * 4 + 2];
-        const yuv = rgb2yuv(
-          r,
-          g,
-          b,
-        );
+    const scale = naturalWidth / naturalHeight;
 
-        pixelData[p * 4] = yuv[0];
-        pixelData[p * 4 + 1] = yuv[1];
-        pixelData[p * 4 + 2] = yuv[2];
-      }
-      ctx.putImageData(imageData, 0, 0);
-
-      if (config.lightNoise) {
-        const halt = config.lightNoise / 2;
-        for (let i = 0; i < pixelData.length; i += 4) {
-          pixelData[i] = pixelData[i] +
-            (randRange(0, config.lightNoise) - halt); // * (255 - pixelData[i])/255;
+    if (config.preview) {
+      if (scale > 1) {
+        if (naturalWidth > config.maxWidth) {
+          width = config.maxWidth;
+          height = config.maxWidth / scale;
+        }
+      } else {
+        if (naturalHeight > config.maxWidth) {
+          width = config.maxWidth * scale;
+          height = config.maxWidth;
         }
       }
-      if (config.darkNoise) {
-        const halt = config.darkNoise / 2;
-        for (let i = 0; i < pixelData.length; i += 4) {
-          pixelData[i] = pixelData[i] +
-            (randRange(0, config.darkNoise) - halt) * (255 - pixelData[i]) /
-              255;
-          //噪声在亮部不那么明显
-        }
-      }
+    }
+    width = Math.floor(width / 100 * config.zoom);
+    height = Math.floor(height / 100 * config.zoom);
 
-      //对比度
-      if (config.contrast !== 1) {
-        for (let i = 0; i < pixelData.length; i += 4) {
-          pixelData[i] = (pixelData[i] - 128) * config.contrast + 128;
-        }
-      }
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.width = width;
 
-      //亮度
-      if (config.light !== 0) {
-        for (let i = 0; i < pixelData.length; i += 4) {
-          pixelData[i] = pixelData[i] + config.light * 128;
-        }
-      }
+    // prepare is finished, then we need to transform the output
+    requestAnimationFrame((_) => {
+      ctx.rect(0, 0, width, height);
+      ctx.fillStyle = "#FFF";
+      ctx.fill();
+
+      // first we drawMix
+      this.drawMix({ width, height }, {
+        width: naturalWidth,
+        height: naturalHeight,
+      }, config.mix);
 
       if (config.convoluteName) {
-        const imageData = ctx.getImageData(0, 0, width, height);
-        const convoluted = convolute(
-          imageData,
-          Convolutes[config.convoluteName],
-        );
-        ctx.putImageData(convoluted, 0, 0);
-      }
-      for (let i = 0; i < pixelData.length; i += 4) {
-        //绿化
-        if (config.g) {
-          const gAdd = config.g * 4;
-          pixelData[i] -= gAdd * config.gy;
-          pixelData[i + 1] -= gAdd;
-          pixelData[i + 2] -= gAdd;
-        }
-
-        const rgb = yuv2rgb(
-          pixelData[i],
-          pixelData[i + 1],
-          pixelData[i + 2],
-        );
-
-        pixelData[i] = rgb[0];
-        pixelData[i + 1] = rgb[1];
-        pixelData[i + 2] = rgb[2];
+        this.drawConVulateWithName(config.convoluteName, { width, height });
       }
 
-      let round = config.round;
-      let i = 1;
-      app.current = 1;
-
-      let popWidth = width * config.pop;
-      let popHeight = height * config.pop;
-
-      const isPop = config.pop;
-      if (isPop) {
-        round = Math.pow(config.pop, 2);
-        if (config.preview && width < config.maxWidth) {
-          const maxPopWidth = config.maxWidth * 2;
-
-          if (popWidth > maxPopWidth) {
-            popWidth = maxPopWidth;
-            popHeight = maxPopWidth * height / width;
-          }
-        }
-
-        const maxPopWidth = 4000;
-        if (popWidth > maxPopWidth) {
-          popWidth = maxPopWidth;
-          popHeight = maxPopWidth * height / width;
-        }
-
-        popCanvas.width = popWidth;
-        popCanvas.height = popHeight;
-      }
-
-      const do_onetime = () => {
-        i++;
-        app.current++;
+      const requestOnce = () => {
+        this.currentTime++;
         if (config.watermark) {
-          watermark();
+          this.drawWaterMark(config, { width, height });
         }
         if (config.green) {
-          green();
+          this.drawGreen({ width, height });
         }
-
-        const src = canvas.toDataURL(
+        const src = this.canvas.toDataURL(
           "image/jpeg",
-          config.quality / 100 + Math.random() * 0.1,
+          config.quality / 100 + Math.random() * .1,
         );
+        const imgElNew = new Image();
 
-        const imgEl = new Image();
-        imgEl.onload = (_) => {
+        imageEl.onload = (_) => {
           const randi = 2;
-          const randPix = randRange(-randi, randi);
-          const randPiy = randRange(-randi, randi);
+          const randPix = this.randRange(-randi, randi);
+          const randPiy = this.randRange(-randi, randi);
 
           ctx.rect(0, 0, width, height);
           ctx.fillStyle = "#FFF";
           ctx.fill();
 
-          ctx.drawImage(
-            imgEl,
+          this.ctx.drawImage(
+            imgElNew,
             0,
             0,
             width,
@@ -453,74 +396,20 @@ export function patina(
             width + randPix,
             height + randPiy,
           );
-
-          if (isPop) {
-            popCtx.drawImage(
-              imgEl,
-              (i - 1) % config.pop * popWidth / config.pop,
-              Math.floor((i - 1) / config.pop) * popHeight / config.pop,
-              popWidth / config.pop,
-              popHeight / config.pop,
-            );
-          }
-
-          app.output = src;
-
-          if (i < round) {
-            do_onetime();
+          this._output = src;
+          if (this.currentTime < config.yearsAgo) {
+            requestOnce();
           } else {
-            app.running = false;
-            app.current = 0;
-
-            if (isPop) {
-              app.output = popCanvas.toDataURL(
-                "image/jpeg",
-                config.quality / 100 + Math.random() * 0.05,
-              );
-            }
+            this.running = false;
+            this.currentTime = 0;
           }
         };
+        imageEl.src = src;
       };
-      const src = canvas.toDataURL(
-        "image/jpeg",
-        config.quality / 100 + Math.random() * 0.05,
-      );
-      const imgEl = new Image();
 
-      imgEl.onload = (_) => {
-        // console.log(/原本执行那一次质量调整/,i)
-
-        ctx.drawImage(
-          imgEl,
-          0,
-          0,
-          width,
-          height,
-        );
-
-        if (isPop) {
-          popCtx.drawImage(
-            imgEl,
-            0,
-            0,
-            popWidth / config.pop,
-            popHeight / config.pop,
-          );
-        }
-
-        app.output = src;
-
-        if (round === 1) {
-          app.running = false;
-          app.current = 0;
-        } else {
-          do_onetime();
-        }
-      };
-      imgEl.src = src;
-      app.output = src;
-    }
-  });
+      requestOnce();
+    });
+  }
 }
 
 export const defaultConfig: Config = {
