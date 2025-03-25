@@ -160,14 +160,35 @@ export class PantaData {
       () => this.randRange(0, 9999).toString(),
     ).replace(/_/g, () => k);
   };
-  constructor(config: PaintConfig, img?: HTMLImageElement) {
-    this.config = config;
+  constructor(config?: PaintConfig, img?: HTMLImageElement) {
+    this.config = config || defaultConfig;
     this.img = img || new Image();
     this.imgOutput = new Image();
     this.canvas = document.createElement("canvas");
     this.popCanvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d")!;
     this.popCtx = this.popCanvas.getContext("2d")!;
+  }
+
+  // set config until running process is done
+  setConfig(config: PaintConfig): Promise<void> {
+    return new Promise((resolve, _) => {
+      if (JSON.stringify(config) === JSON.stringify(this.config)) {
+        resolve();
+        return;
+      }
+      const trySetConfig = (): boolean => {
+        if (this.running) {
+          return false;
+        }
+        this.config = config;
+        resolve();
+        return true;
+      };
+      if (!trySetConfig()) {
+        setTimeout(trySetConfig, 100);
+      }
+    });
   }
 
   get outputImg(): HTMLImageElement {
