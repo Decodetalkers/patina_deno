@@ -140,7 +140,7 @@ export type Size = {
 
 export class PantaData {
   img: HTMLImageElement;
-  _output?: string;
+  imgOutput: HTMLImageElement;
   running: boolean = false;
   width?: number;
   canvas: HTMLCanvasElement;
@@ -163,21 +163,30 @@ export class PantaData {
   constructor(config: PaintConfig, img?: HTMLImageElement) {
     this.config = config;
     this.img = img || new Image();
+    this.imgOutput = new Image();
     this.canvas = document.createElement("canvas");
     this.popCanvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d")!;
     this.popCtx = this.popCanvas.getContext("2d")!;
   }
 
-  get output(): string {
-    return this._output || "";
+  get outputImg(): HTMLImageElement {
+    return this.imgOutput;
   }
 
-  get image(): HTMLImageElement {
+  get outputUrl(): string {
+    return this.imgOutput.src;
+  }
+
+  get srcUrl(): string {
+    return this.srcImg.src;
+  }
+
+  get srcImg(): HTMLImageElement {
     return this.img;
   }
 
-  set image(img: HTMLImageElement) {
+  set srcImg(img: HTMLImageElement) {
     this.img = img;
   }
 
@@ -435,9 +444,8 @@ export class PantaData {
           "image/jpeg",
           config.quality / 100 + Math.random() * .1,
         );
-        const imgElNew = new Image();
 
-        imgElNew.onload = (_) => {
+        this.imgOutput.onload = (_) => {
           const randi = 2;
           const randPix = this.randRange(-randi, randi);
           const randPiy = this.randRange(-randi, randi);
@@ -447,7 +455,7 @@ export class PantaData {
           this.ctx.fill();
 
           this.ctx.drawImage(
-            imgElNew,
+            this.imgOutput,
             0,
             0,
             width,
@@ -457,7 +465,6 @@ export class PantaData {
             width + randPix,
             height + randPiy,
           );
-          this._output = src;
           callback && callback(this);
           if (this.currentTime < config.yearsAgo) {
             requestOnce();
@@ -466,7 +473,7 @@ export class PantaData {
             this.currentTime = 0;
           }
         };
-        imgElNew.src = src;
+        this.imgOutput.src = src;
       };
 
       requestOnce();

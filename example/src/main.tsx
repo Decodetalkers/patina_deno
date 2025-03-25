@@ -33,15 +33,15 @@ const readFileToURl = (file: File, onOver: (src: string) => void) => {
 function ImagePreview() {
   const paintaData = new PantaData(defaultConfig);
 
-  const imgRef = useRef<HTMLImageElement>(paintaData.image);
-  const [srcUrl, setSrcUrl] = useState(paintaData.img.src);
-  const [outputUrl, setOutputUrl] = useState(paintaData.output);
+  const imgRef = useRef<HTMLImageElement>(paintaData.srcImg);
+  const [srcUrl, setSrcUrl] = useState(paintaData.srcUrl);
+  const [outputUrl, setOutputUrl] = useState(paintaData.outputUrl);
 
   useEffect(() => {
     imgRef.current.onload = () => {
       paintaData.patina((data) => {
-        setSrcUrl(data.image.src);
-        setOutputUrl(data.output || "");
+        setSrcUrl(data.srcImg.src);
+        setOutputUrl(data.outputUrl || "");
       });
     };
   }, []);
@@ -53,7 +53,7 @@ function ImagePreview() {
         readFileToURl(file, (src) => {
           paintaData.setImageSrc(src);
           setSrcUrl(paintaData.img.src);
-          setOutputUrl(paintaData.output || "");
+          setOutputUrl(paintaData.outputUrl || "");
         });
       }
     }
