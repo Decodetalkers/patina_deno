@@ -36,13 +36,19 @@ function ImagePreview() {
   const imgRef = useRef<HTMLImageElement>(paintaData.srcImg);
   const [srcUrl, setSrcUrl] = useState(paintaData.srcUrl);
   const [outputUrl, setOutputUrl] = useState(paintaData.outputUrl);
+  const [srcWidth, setSrcWidth] = useState(paintaData.srcWidth);
 
   useEffect(() => {
-    imgRef.current.onload = () => {
-      paintaData.patina((data) => {
-        setSrcUrl(data.srcImg.src);
-        setOutputUrl(data.outputUrl || "");
-      });
+    imgRef.current.onload = async () => {
+      try {
+        await paintaData.patina((data) => {
+          setSrcUrl(data.srcImg.src);
+          setSrcWidth(paintaData.srcWidth);
+          setOutputUrl(data.outputUrl || "");
+        });
+      } catch (e) {
+        console.error(e);
+      }
     };
   }, []);
   document.addEventListener("paste", (e) => {
@@ -53,6 +59,7 @@ function ImagePreview() {
         readFileToURl(file, (src) => {
           paintaData.setImageSrc(src);
           setSrcUrl(paintaData.img.src);
+          setSrcWidth(paintaData.srcWidth);
           setOutputUrl(paintaData.outputUrl || "");
         });
       }
@@ -60,7 +67,7 @@ function ImagePreview() {
   });
   return (
     <ImageDiv>
-      <img src={srcUrl} ref={imgRef} />
+      <img src={srcUrl} ref={imgRef} width={srcWidth} />
       <img src={outputUrl} />
     </ImageDiv>
   );

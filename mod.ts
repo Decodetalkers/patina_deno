@@ -110,7 +110,7 @@ type Plain = {
 type PaintConfig = {
   usePopUp?: boolean;
   popUp?: number;
-  yearsAgo: number;
+  greenTimes: number;
   rand: boolean;
   maxWidth: number;
   preview: boolean;
@@ -201,6 +201,10 @@ export class PantaData {
 
   get srcUrl(): string {
     return this.srcImg.src;
+  }
+
+  get srcWidth(): number {
+    return Math.min(this.config.maxWidth, this.srcImg.naturalWidth);
   }
 
   get srcImg(): HTMLImageElement {
@@ -386,118 +390,126 @@ export class PantaData {
     );
   }
 
-  public patina(callback?: (data: PantaData) => void) {
-    const config = this.config;
-    const imageEl = this.img;
-    if (!imageEl) {
-      return;
-    }
-    // because last config is still doing
-    if (this.running) {
-      return;
-    }
-
-    const naturalWidth = imageEl.naturalWidth;
-    const naturalHeight = imageEl.naturalHeight;
-
-    let width = naturalWidth;
-    let height = naturalHeight;
-    if (config.rand) {
-      this.randRange = (a, b) => Math.round(Math.random() * (b - a) + a);
-    } else {
-      this.randRange = () => 0;
-    }
-
-    const scale = naturalWidth / naturalHeight;
-
-    if (config.preview) {
-      if (scale > 1) {
-        if (naturalWidth > config.maxWidth) {
-          width = config.maxWidth;
-          height = config.maxWidth / scale;
+  public patina(callback?: (data: PantaData) => void): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const patinaInside = () => {
+        const config = this.config;
+        const imageEl = this.img;
+        if (!imageEl) {
+          reject("src is not exist");
+          return;
         }
-      } else {
-        if (naturalHeight > config.maxWidth) {
-          width = config.maxWidth * scale;
-          height = config.maxWidth;
+        // because last config is still doing
+        if (this.running) {
+          patinaInside();
+          return;
         }
-      }
-    }
-    width = Math.floor(width / 100 * config.zoom);
-    height = Math.floor(height / 100 * config.zoom);
 
-    this.canvas.width = width;
-    this.canvas.height = height;
-    this.width = width;
+        const naturalWidth = imageEl.naturalWidth;
+        const naturalHeight = imageEl.naturalHeight;
 
-    // prepare is finished, then we need to transform the output
-    requestAnimationFrame((_) => {
-      this.ctx.rect(0, 0, width, height);
-      this.ctx.fillStyle = "#FFF";
-      this.ctx.fill();
-
-      // first we drawMix
-      this.drawMix({ width, height }, {
-        width: naturalWidth,
-        height: naturalHeight,
-      });
-
-      if (
-        config.lightNoise ||
-        config.darkNoise ||
-        config.contrast !== 1 ||
-        config.light !== 0 ||
-        config.green !== 0 ||
-        config.convoluteName
-      ) {
-        this.drawOthers({ width, height });
-      }
-
-      const requestOnce = () => {
-        this.currentTime++;
-        if (config.watermark) {
-          this.drawWaterMark({ width, height });
+        let width = naturalWidth;
+        let height = naturalHeight;
+        if (config.rand) {
+          this.randRange = (a, b) => Math.round(Math.random() * (b - a) + a);
+        } else {
+          this.randRange = () => 0;
         }
-        if (config.green) {
-          this.drawGreenBase({ width, height });
+
+        const scale = naturalWidth / naturalHeight;
+
+        if (config.preview) {
+          if (scale > 1) {
+            if (naturalWidth > config.maxWidth) {
+              width = config.maxWidth;
+              height = config.maxWidth / scale;
+            }
+          } else {
+            if (naturalHeight > config.maxWidth) {
+              width = config.maxWidth * scale;
+              height = config.maxWidth;
+            }
+          }
         }
-        const src = this.canvas.toDataURL(
-          "image/jpeg",
-          config.quality / 100 + Math.random() * .1,
-        );
+        width = Math.floor(width / 100 * config.zoom);
+        height = Math.floor(height / 100 * config.zoom);
 
-        this.imgOutput.onload = (_) => {
-          const randi = 2;
-          const randPix = this.randRange(-randi, randi);
-          const randPiy = this.randRange(-randi, randi);
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.width = width;
 
+        // prepare is finished, then we need to transform the output
+        requestAnimationFrame((_) => {
           this.ctx.rect(0, 0, width, height);
           this.ctx.fillStyle = "#FFF";
           this.ctx.fill();
 
-          this.ctx.drawImage(
-            this.imgOutput,
-            0,
-            0,
-            width,
-            height,
-            0 - randPix / 2,
-            0 - randPiy / 2,
-            width + randPix,
-            height + randPiy,
-          );
-          callback && callback(this);
-          if (this.currentTime < config.yearsAgo) {
-            requestOnce();
-          } else {
-            this.running = false;
-            this.currentTime = 0;
-          }
-        };
-        this.imgOutput.src = src;
-      };
+          // first we drawMix
+          this.drawMix({ width, height }, {
+            width: naturalWidth,
+            height: naturalHeight,
+          });
 
-      requestOnce();
+          if (
+            config.lightNoise ||
+            config.darkNoise ||
+            config.contrast !== 1 ||
+            config.light !== 0 ||
+            config.green !== 0 ||
+            config.convoluteName
+          ) {
+            this.drawOthers({ width, height });
+          }
+
+          const requestOnce = () => {
+            this.currentTime++;
+            if (config.watermark) {
+              this.drawWaterMark({ width, height });
+            }
+            if (config.green) {
+              this.drawGreenBase({ width, height });
+            }
+            const src = this.canvas.toDataURL(
+              "image/jpeg",
+              config.quality / 100 + Math.random() * .1,
+            );
+
+            this.imgOutput.onload = (_) => {
+              const randi = 2;
+              const randPix = this.randRange(-randi, randi);
+              const randPiy = this.randRange(-randi, randi);
+
+              this.ctx.rect(0, 0, width, height);
+              this.ctx.fillStyle = "#FFF";
+              this.ctx.fill();
+
+              this.ctx.drawImage(
+                this.imgOutput,
+                0,
+                0,
+                width,
+                height,
+                0 - randPix / 2,
+                0 - randPiy / 2,
+                width + randPix,
+                height + randPiy,
+              );
+              callback && callback(this);
+              if (this.currentTime < config.greenTimes) {
+                requestOnce();
+              } else {
+                this.running = false;
+                this.currentTime = 0;
+                resolve();
+              }
+            };
+            this.imgOutput.src = src;
+          };
+
+          requestOnce();
+        });
+      };
+      patinaInside();
     });
   }
 }
@@ -520,7 +532,7 @@ export const defaultConfig: PaintConfig = {
   green: 0.5,
   gy: 0.5,
   convoluteName: "sauna",
-  yearsAgo: 30,
+  greenTimes: 50,
   //isPop: false,
   //pop: 1,
   quality: 80,
