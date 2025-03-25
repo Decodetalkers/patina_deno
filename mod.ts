@@ -401,7 +401,7 @@ export class PantaData {
         }
         // because last config is still doing
         if (this.running) {
-          patinaInside();
+          setTimeout(patinaInside, 100);
           return;
         }
 
