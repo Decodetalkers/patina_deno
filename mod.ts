@@ -119,6 +119,7 @@ type PaintConfig = {
   watermark: boolean;
   watermarkSize: number;
   watermarkShadowAlpha: number;
+  watermarkPlan: number;
 
   green?: number;
   gy: number;
@@ -137,6 +138,8 @@ export type Size = {
   width: number;
   height: number;
 };
+const randRangeGlobal = (a: number, b: number) =>
+  Math.round(Math.random() * (b - a) + a);
 
 export class PantaData {
   img: HTMLImageElement;
@@ -360,6 +363,37 @@ export class PantaData {
     this.ctx.putImageData(pixel, 0, 0);
   }
 
+  private getWatermarkPlan(
+    { width, height }: Size,
+    shift: number,
+    i: number = randRangeGlobal(0, 2),
+  ): Plain {
+    switch (i) {
+      case 0:
+        return {
+          align: "right",
+          left: width - shift * 1.2 + this.randRange(-5, 5),
+          top: height - shift + this.randRange(-5, 5),
+        };
+      case 1:
+        return {
+          align: "center",
+          left: width / 2 + this.randRange(-10, 10),
+          top: height - shift * 1.2 + this.randRange(-5, 5),
+        };
+      case 2:
+        return {
+          align: "center",
+          left: width / 2 + this.randRange(-10, 10),
+          top: height / 2 + shift + this.randRange(-10, 10),
+        };
+    }
+    return {
+      align: "center",
+      left: width / 2 + this.randRange(-10, 10),
+      top: height / 2 + shift + this.randRange(-10, 10),
+    };
+  }
   private drawWaterMark({ width, height }: Size) {
     const config = this.config;
     const randSize = this.randRange(0, 7);
@@ -375,11 +409,11 @@ export class PantaData {
     this.ctx.fillStyle = "#fff";
 
     const shift = fontSize / 2;
-    const watermarkPlan: Plain = {
-      align: "right",
-      left: width - shift * 1.2 + this.randRange(-5, 5),
-      top: height - shift + this.randRange(-5, 5),
-    };
+    const watermarkPlan: Plain = this.getWatermarkPlan(
+      { width, height },
+      shift,
+      randRangeGlobal(0, this.config.watermarkPlan),
+    );
 
     this.ctx.textAlign = watermarkPlan.align;
     this.ctx.textBaseline = "bottom";
@@ -520,10 +554,10 @@ export const defaultConfig: PaintConfig = {
   maxWidth: 500,
   zoom: 100,
   mix: 1,
-  watermark: false,
+  watermark: true,
   watermarkSize: 12,
   watermarkShadowAlpha: 0.5,
-  //watermarkPlan: 1,
+  watermarkPlan: 2,
   userNames: ["JohnDoe", "JaneDoe"],
   lightNoise: 5,
   darkNoise: 5,
