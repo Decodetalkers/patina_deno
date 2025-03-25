@@ -16,39 +16,10 @@ interface BuildMode {
 const input_args = parseArgs(Deno.args) as BuildMode;
 
 const release_mode = input_args.release;
-const route_2 = new Route("under")
-  .appendAssert({ path: "favicon.ico" })
-  .appendWebPage(
-    new WebPageUnit(
-      "src/main.tsx",
-      [{ type: "main", id: "mount" }],
-      [{ src: "main.js" }],
-    )
-      .withTitle("index")
-      .withLinkInfos([
-        {
-          type: "icon",
-          href: "favicon.icon",
-        },
-      ]),
-  )
-  .appendWebPage(
-    new WebPageUnit(
-      "./src/hello.tsx",
-      [{ type: "main", id: "mount" }],
-      [{ src: "hello.js" }],
-    )
-      .withTitle("hello")
-      .withHtmlName("hello.html")
-      .withLinkInfos([
-        {
-          type: "icon",
-          href: "favicon.icon",
-        },
-      ]),
-  );
+
 const route = new Route()
   .appendAssert({ path: "favicon.ico" })
+  .appendAssert({ path: "./static" })
   .appendWebPage(
     new WebPageUnit(
       "src/main.tsx",
@@ -61,26 +32,11 @@ const route = new Route()
           type: "icon",
           href: "favicon.ico",
         },
+        { type: "stylesheet", href: "static/global.css" },
       ])
       .withHotReload(),
   )
-  .appendWebPage(
-    new WebPageUnit(
-      "./src/hello.tsx",
-      [{ type: "main", id: "mount" }],
-      [{ src: "hello.js" }],
-    )
-      .withTitle("hello")
-      .withLinkInfos([
-        {
-          type: "icon",
-          href: "favicon.icon",
-        },
-      ])
-      .withHtmlName("hello.html"),
-  )
-  .withHotReload(true)
-  .appendRoute(route_2);
+  .withHotReload(true);
 const webgen = new GenWebsite()
   .withLogLevel("info")
   .withImportSource("npm:preact");
