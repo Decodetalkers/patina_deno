@@ -368,7 +368,8 @@ export class PantaData {
     shift: number,
     i: number = randRangeGlobal(0, 2),
   ): Plain {
-    switch (i) {
+    const newI = i % 3;
+    switch (newI) {
       case 0:
         return {
           align: "right",
@@ -383,7 +384,7 @@ export class PantaData {
         };
       case 2:
         return {
-          align: "center",
+          align: "left",
           left: width / 2 + this.randRange(-10, 10),
           top: height / 2 + shift + this.randRange(-10, 10),
         };
