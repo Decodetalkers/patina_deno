@@ -108,8 +108,8 @@ type Plain = {
 };
 
 type PaintConfig = {
-  usePopUp?: boolean;
-  popUp?: number;
+  usePopUp: boolean;
+  popUp: number;
   greenTimes: number;
   rand: boolean;
   maxWidth: number;
@@ -133,6 +133,13 @@ type PaintConfig = {
   contrast?: number;
   light?: number;
 };
+
+function roundTime(config: PaintConfig): number {
+  if (config.usePopUp) {
+    return Math.pow(config.popUp, 2);
+  }
+  return config.greenTimes;
+}
 
 export type Size = {
   width: number;
@@ -426,6 +433,7 @@ export class PantaData {
   }
 
   public patina(callback?: (data: PantaData) => void): Promise<void> {
+    const theRoundTime = roundTime(this.config);
     return new Promise((resolve, reject) => {
       const patinaInside = () => {
         const config = this.config;
@@ -496,6 +504,28 @@ export class PantaData {
             this.drawOthers({ width, height });
           }
 
+          const isPop = this.config.usePopUp;
+
+          let popWidth = width * this.config.popUp;
+          let popHeight = height * this.config.popUp;
+
+          if (isPop) {
+            if (this.config.popUp && width < this.config.maxWidth) {
+              const maxPopWidth = this.config.maxWidth * 2;
+              if (popWidth > maxPopWidth) {
+                popWidth = maxPopWidth;
+                popHeight = maxPopWidth * height / width;
+              }
+            }
+            const maxPopWidth = 4000;
+            if (popWidth > maxPopWidth) {
+              popWidth = maxPopWidth;
+              popHeight = maxPopWidth * height / width;
+            }
+            this.popCanvas.width = popWidth;
+            this.popCanvas.height = popHeight;
+          }
+
           const requestOnce = () => {
             this.currentTime++;
             if (config.watermark) {
@@ -504,11 +534,18 @@ export class PantaData {
             if (config.green) {
               this.drawGreenBase({ width, height });
             }
-            const src = this.canvas.toDataURL(
-              "image/jpeg",
-              config.quality / 100 + Math.random() * .1,
-            );
-
+            let src;
+            if (isPop) {
+              src = this.popCanvas.toDataURL(
+                "image/jpeg",
+                config.quality / 100 + Math.random() * 0.05,
+              );
+            } else {
+              src = this.canvas.toDataURL(
+                "image/jpeg",
+                config.quality / 100 + Math.random() * 0.1,
+              );
+            }
             this.imgOutput.onload = (_) => {
               const randi = 2;
               const randPix = this.randRange(-randi, randi);
@@ -517,7 +554,6 @@ export class PantaData {
               this.ctx.rect(0, 0, width, height);
               this.ctx.fillStyle = "#FFF";
               this.ctx.fill();
-
               this.ctx.drawImage(
                 this.imgOutput,
                 0,
@@ -529,8 +565,20 @@ export class PantaData {
                 width + randPix,
                 height + randPiy,
               );
+              if (isPop) {
+                this.popCtx.drawImage(
+                  this.imgOutput,
+                  ((this.currentTime - 1) % this.config.popUp) * popWidth /
+                    this.config.popUp,
+                  Math.floor((this.currentTime - 1) / this.config.popUp) *
+                    popHeight /
+                    this.config.popUp,
+                  popWidth / this.config.popUp,
+                  popHeight / this.config.popUp,
+                );
+              }
               callback && callback(this);
-              if (this.currentTime < config.greenTimes) {
+              if (this.currentTime < theRoundTime) {
                 requestOnce();
               } else {
                 this.running = false;
@@ -555,7 +603,7 @@ export const defaultConfig: PaintConfig = {
   maxWidth: 500,
   zoom: 100,
   mix: 1,
-  watermark: true,
+  watermark: false,
   watermarkSize: 12,
   watermarkShadowAlpha: 0.5,
   watermarkPlan: 2,
@@ -567,8 +615,8 @@ export const defaultConfig: PaintConfig = {
   green: 0.5,
   gy: 0.5,
   convoluteName: "sauna",
-  greenTimes: 50,
-  //isPop: false,
-  //pop: 1,
+  greenTimes: 100,
+  usePopUp: true,
+  popUp: 10,
   quality: 80,
 };
