@@ -31,17 +31,17 @@ const readFileToURl = (file: File, onOver: (src: string) => void) => {
 };
 
 function ImagePreview() {
-  const paintaData = new PantaData();
+  const paintaData = new PantaData(defaultConfig);
 
   const imgRef = useRef<HTMLImageElement>(paintaData.image);
   const [srcUrl, setSrcUrl] = useState(paintaData.img.src);
-  const [outputUrl, setOutputUrl] = useState(paintaData.output || "");
+  const [outputUrl, setOutputUrl] = useState(paintaData.output);
 
   useEffect(() => {
     imgRef.current.onload = () => {
-      paintaData.patina(defaultConfig, () => {
-        setSrcUrl(paintaData.image.src);
-        setOutputUrl(paintaData.output || "");
+      paintaData.patina((data) => {
+        setSrcUrl(data.image.src);
+        setOutputUrl(data.output || "");
       });
     };
   }, []);

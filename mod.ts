@@ -147,6 +147,7 @@ export class PantaData {
   ctx: CanvasRenderingContext2D;
   popCanvas: HTMLCanvasElement;
   popCtx: CanvasRenderingContext2D;
+  config: PaintConfig;
 
   currentTime: number = 0;
 
@@ -159,7 +160,8 @@ export class PantaData {
       () => this.randRange(0, 9999).toString(),
     ).replace(/_/g, () => k);
   };
-  constructor(img?: HTMLImageElement) {
+  constructor(config: PaintConfig, img?: HTMLImageElement) {
+    this.config = config;
     this.img = img || new Image();
     this.canvas = document.createElement("canvas");
     this.popCanvas = document.createElement("canvas");
@@ -167,8 +169,8 @@ export class PantaData {
     this.popCtx = this.popCanvas.getContext("2d")!;
   }
 
-  get output(): string | undefined {
-    return this._output;
+  get output(): string {
+    return this._output || "";
   }
 
   get image(): HTMLImageElement {
@@ -183,7 +185,8 @@ export class PantaData {
     this.img.src = src;
   }
 
-  private drawMix(canvasSize: Size, naturalSize: Size, mix: number) {
+  private drawMix(canvasSize: Size, naturalSize: Size) {
+    const mix = this.config.mix;
     const { width, height } = canvasSize;
     const { width: naturalWidth, height: naturalHeight } = naturalSize;
     if (mix === 1) {
@@ -245,8 +248,8 @@ export class PantaData {
 
   private drawOthers(
     { width, height }: Size,
-    config: PaintConfig,
   ) {
+    const config = this.config;
     let pixel = this.ctx.getImageData(0, 0, width, height);
     let pixelData = pixel.data;
     for (let i = 0; i < pixelData.length; i += 4) {
@@ -323,7 +326,8 @@ export class PantaData {
     this.ctx.putImageData(pixel, 0, 0);
   }
 
-  private drawWaterMark(config: PaintConfig, { width, height }: Size) {
+  private drawWaterMark({ width, height }: Size) {
+    const config = this.config;
     const randSize = this.randRange(0, 7);
     let fontSize = 22 + randSize;
     fontSize = width / fontSize * config.watermarkSize;
@@ -352,7 +356,8 @@ export class PantaData {
     );
   }
 
-  public patina(config: PaintConfig, callback?: () => void) {
+  public patina(callback?: (data: PantaData) => void) {
+    const config = this.config;
     const imageEl = this.img;
     if (!imageEl) {
       return;
@@ -405,7 +410,7 @@ export class PantaData {
       this.drawMix({ width, height }, {
         width: naturalWidth,
         height: naturalHeight,
-      }, config.mix);
+      });
 
       if (
         config.lightNoise ||
@@ -415,13 +420,13 @@ export class PantaData {
         config.green !== 0 ||
         config.convoluteName
       ) {
-        this.drawOthers({ width, height }, config);
+        this.drawOthers({ width, height });
       }
 
       const requestOnce = () => {
         this.currentTime++;
         if (config.watermark) {
-          this.drawWaterMark(config, { width, height });
+          this.drawWaterMark({ width, height });
         }
         if (config.green) {
           this.drawGreenBase({ width, height });
@@ -453,7 +458,7 @@ export class PantaData {
             height + randPiy,
           );
           this._output = src;
-          callback && callback();
+          callback && callback(this);
           if (this.currentTime < config.yearsAgo) {
             requestOnce();
           } else {
@@ -471,8 +476,8 @@ export class PantaData {
 
 export const defaultConfig: PaintConfig = {
   rand: false,
-  preview: false,
-  maxWidth: 800,
+  preview: true,
+  maxWidth: 500,
   zoom: 100,
   mix: 1,
   watermark: false,
