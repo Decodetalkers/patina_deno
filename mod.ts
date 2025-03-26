@@ -132,6 +132,8 @@ type PaintConfig = {
   darkNoise?: number;
   contrast?: number;
   light?: number;
+
+  fonts: string[];
 };
 
 function roundTime(config: PaintConfig): number {
@@ -408,6 +410,7 @@ export class PantaData {
       top: height / 2 + shift + this.randRange(-10, 10),
     };
   }
+
   private drawWaterMark({ width, height }: Size) {
     const config = this.config;
     const randSize = this.randRange(0, 7);
@@ -418,8 +421,8 @@ export class PantaData {
     this.ctx.shadowOffsetX = 0;
     this.ctx.shadowOffsetY = 1;
     this.ctx.shadowBlur = 4;
-    this.ctx.font =
-      `${fontSize}px/400 "PingFang SC","Microsoft YaHei",sans-serif`;
+    const fontString = fontStringLists(this.config);
+    this.ctx.font = `${fontSize}px/400 ${fontString}`;
     this.ctx.fillStyle = "#fff";
 
     const shift = fontSize / 2;
@@ -622,4 +625,19 @@ export const defaultConfig: PaintConfig = {
   usePopUp: true,
   popUp: 10,
   quality: 80,
+
+  fonts: ["PingFang SC", "Microsoft YaHei", "sans-serif"],
 };
+
+export function fontStringLists(config: PaintConfig): string {
+  const outputs = [];
+
+  for (const font of config.fonts) {
+    let fixedFont = font;
+    if (font.includes(" ")) {
+      fixedFont = `"${font}"`;
+    }
+    outputs.push(fixedFont);
+  }
+  return outputs.join(",");
+}
