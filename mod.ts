@@ -236,7 +236,7 @@ export class PantaData {
       const mixedWidth = width / mix;
       const mixedHeight = height / mix;
       this.ctx.drawImage(
-        this.img!,
+        this.img,
         0,
         0,
         naturalWidth,
@@ -422,14 +422,11 @@ export class PantaData {
 
   public patina(callback?: (data: PantaData) => void): Promise<void> {
     const theRoundTime = roundTime(this.config);
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
       const patinaInside = () => {
         const config = this.config;
         const imageEl = this.img;
-        if (!imageEl) {
-          reject("src is not exist");
-          return;
-        }
+
         // because last config is still doing
         if (this.running) {
           setTimeout(patinaInside, 100);
