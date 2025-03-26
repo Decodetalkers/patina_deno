@@ -3,6 +3,16 @@
  * @itorr <https://lab.magiconch.com/>
  * 2022-03-31
  */
+
+import {
+  Convolutes,
+  fontStringLists,
+  type PaintConfig,
+  type Plain,
+} from "./config.ts";
+
+export type { ConvoluteKey, Convolutes } from "./config.ts";
+
 // Utility functions
 //
 const clamp = (x: number): number => (x >= 0 ? (x <= 255 ? x : 255) : 0);
@@ -73,67 +83,6 @@ const convolute = (pixels: ImageData, weights: number[]): ImageData => {
   }
 
   return output;
-};
-
-// deno-fmt-ignore
-export const Convolutes = {
-  "right": [
-    0, -1, 0,
-    -1, 2, 2,
-    0, -1, 0,
-  ],
-  "left": [
-    0, -1, 0,
-    3, 2, -2,
-    0, -1, 0,
-  ],
-  "sauna": [
-    1 / 9, 1 / 9, 1 / 9,
-    1 / 9, 1 / 9, 1 / 9,
-    1 / 9, 1 / 9, 1 / 9,
-  ],
-  "relief": [
-    1, 1, 1,
-    1, 1, -1,
-    -1, -1, -1,
-  ],
-};
-
-export type ConvoluteKey = keyof typeof Convolutes;
-
-type Plain = {
-  align: CanvasTextAlign;
-  left: number;
-  top: number;
-};
-
-type PaintConfig = {
-  usePopUp: boolean;
-  popUp: number;
-  greenTimes: number;
-  rand: boolean;
-  maxWidth: number;
-  preview: boolean;
-  zoom: number;
-  mix: number;
-  watermark: boolean;
-  watermarkSize: number;
-  watermarkShadowAlpha: number;
-  watermarkPlan: number;
-
-  green?: number;
-  gy: number;
-  userNames: string[];
-
-  quality: number;
-  convoluteName?: ConvoluteKey;
-
-  lightNoise?: number;
-  darkNoise?: number;
-  contrast?: number;
-  light?: number;
-
-  fonts: string[];
 };
 
 function roundTime(config: PaintConfig): number {
@@ -628,16 +577,3 @@ export const defaultConfig: PaintConfig = {
 
   fonts: ["PingFang SC", "Microsoft YaHei", "sans-serif"],
 };
-
-export function fontStringLists(config: PaintConfig): string {
-  const outputs = [];
-
-  for (const font of config.fonts) {
-    let fixedFont = font;
-    if (font.includes(" ")) {
-      fixedFont = `"${font}"`;
-    }
-    outputs.push(fixedFont);
-  }
-  return outputs.join(",");
-}

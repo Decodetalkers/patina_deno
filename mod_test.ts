@@ -1,6 +1,8 @@
 import { assertEquals } from "@std/assert";
 
-import { defaultConfig, fontStringLists } from "./mod.ts";
+import { defaultConfig } from "./mod.ts";
+
+import { fontStringLists } from "./config.ts";
 
 Deno.test(function fontCheck() {
   const fontString = fontStringLists(defaultConfig);
