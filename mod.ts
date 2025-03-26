@@ -116,6 +116,8 @@ export class PantaData {
   private popCtx: CanvasRenderingContext2D;
   private config: PaintConfig;
 
+  private _previewWidth?: number;
+
   private currentTime: number = 0;
 
   private randRange = (a: number, b: number): number =>
@@ -136,6 +138,11 @@ export class PantaData {
     this.popCanvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d")!;
     this.popCtx = this.popCanvas.getContext("2d")!;
+    this._previewWidth = this.config.previewWidth;
+  }
+
+  get previewWidth(): number {
+    return this._previewWidth || this.srcWidth;
   }
 
   get isPop(): boolean {
@@ -580,6 +587,7 @@ export class PantaData {
 export const defaultConfig: PaintConfig = {
   rand: false,
   preview: true,
+  previewWidth: 400,
   maxWidth: 500,
   zoom: 100,
   mix: 1,

@@ -35,6 +35,7 @@ export type PaintConfig = {
   popDim: number;
   greenDeepth: number;
   rand: boolean;
+  previewWidth?: number;
   maxWidth: number;
   preview: boolean;
   zoom: number;
