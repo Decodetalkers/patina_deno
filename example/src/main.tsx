@@ -39,6 +39,11 @@ CtrlBoxGroup.setCSS("ctrl-box")`
 `;
 
 const ctrlBox = CtrlBoxGroup.generate();
+
+const InputBox = styled.div`
+  padding: 4px 0px;
+`;
+
 const appKeys = [`data-running="true"`] as const;
 
 const appStyle = new AttributeGroup(appKeys);
@@ -76,9 +81,16 @@ input.type = "file";
 input.accept = "image/*";
 form.appendChild(input);
 
+function generateDownloadName(): string {
+  return `[lab.magiconch.com][电子包浆]-${+Date
+    .now()}.jpg`;
+  // a.click();
+}
+
 function ImagePreview() {
   const imgRef = useRef<HTMLImageElement>(paintaData.srcImg);
   const [srcUrl, setSrcUrl] = useState(paintaData.srcUrl);
+  const [downloadName, setDownloadName] = useState(generateDownloadName());
   const [running, setRunning] = useState(paintaData.isRunning);
   const [outputUrl, setOutputUrl] = useState(paintaData.outputUrl);
   const [previewWidth, setPreviewWidth] = useState(paintaData.srcWidth);
@@ -122,6 +134,11 @@ function ImagePreview() {
     };
     input.click();
   };
+
+  const resetDownloadName = () => {
+    setDownloadName(generateDownloadName());
+  };
+
   return (
     <div className={appCSS} data-running={running}>
       <OutputBox>
@@ -135,13 +152,24 @@ function ImagePreview() {
         <img src={outputUrl} width={previewWidth} />
       </OutputBox>
       <div className={ctrlBox["ctrl-box"]}>
-        <button type="submit" onClick={submitCallBack}>
-          Choose or clip Picture
-        </button>
+        <InputBox>
+          <button type="submit" onClick={submitCallBack}>
+            Choose or clip Picture
+          </button>
+          <a
+            className="btn"
+            href={outputUrl}
+            download={downloadName}
+            onClick={resetDownloadName}
+          >
+            Download
+          </a>
+        </InputBox>
       </div>
     </div>
   );
 }
+
 function App() {
   return <ImagePreview />;
 }
