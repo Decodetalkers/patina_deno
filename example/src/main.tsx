@@ -2,25 +2,56 @@ import { render } from "preact";
 
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import styled, { AttributeGroup } from "styled-components-deno";
+import styled, { AttributeGroup, StyleGroup } from "styled-components-deno";
 
 import { defaultConfig, PantaData } from "@nobody/patina";
 
 const OutputBox = styled.div`
+  overflow: hidden;
   img {
     display: block;
     object-fit: contain;
-    with: 50%;
-    float: left;
+  }
+  @media(min-width:820px) {
+    img {
+      float: left;
+      width: 50%;
+      max-width: 500px;
+      max-height: 500px;
+
+    }
+  }
+  @media(max-width:820px) {
+    img {
+      margin: 0 auto;
+    }
+    .source-image {
+      display: none
+    }
   }
 `;
+const CtrlBoxName = ["ctrl-box"] as const;
 
+const CtrlBoxGroup = new StyleGroup(CtrlBoxName, "ctrl-box");
+
+CtrlBoxGroup.setCSS("ctrl-box")`
+  padding: 10px 15px
+`;
+
+const InputBox = styled.div`
+  padding: 4px 0;
+`;
+
+const ctrlBox = CtrlBoxGroup.generate();
 const appKeys = [`data-running="true"`] as const;
 
 const appStyle = new AttributeGroup(appKeys);
 
 appStyle.setCSS('data-running="true"')`
   cursor: wait;
+  ${ctrlBox["ctrl-box"]} {
+    pointer-events: none
+  }
 `;
 
 appStyle.generate();
@@ -43,6 +74,7 @@ const readFileToURl = (file: File, onOver: (src: string) => void) => {
 
 function ImagePreview() {
   const paintaData = new PantaData(defaultConfig);
+  paintaData.setImageSrc("./static/images/totoro-avatar.jpg");
 
   const imgRef = useRef<HTMLImageElement>(paintaData.srcImg);
   const [srcUrl, setSrcUrl] = useState(paintaData.srcUrl);
@@ -81,9 +113,17 @@ function ImagePreview() {
   return (
     <div className={appCSS} data-running={running}>
       <OutputBox>
-        <img src={srcUrl} ref={imgRef} width={previewWidth} />
+        <img
+          className="source-image"
+          src={srcUrl}
+          ref={imgRef}
+          width={previewWidth}
+        />
         <img src={outputUrl} width={previewWidth} />
       </OutputBox>
+      <div className={ctrlBox["ctrl-box"]}>
+        <button type="submit">Choose or clip Picture</button>
+      </div>
     </div>
   );
 }

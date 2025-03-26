@@ -26,6 +26,7 @@ const route = new Route()
       [{ type: "main", id: "mount" }],
       [{ src: "main.js" }],
     )
+      .withViewport("width=device-width,user-scalable=0")
       .withTitle("index")
       .withLinkInfos([
         {
