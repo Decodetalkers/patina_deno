@@ -49,6 +49,7 @@ const yuv2rgb = (y: number, u: number, v: number) => {
 
   return [r, g, b];
 };
+
 const convolute = (pixels: ImageData, weights: number[]): ImageData => {
   const side = Math.round(Math.sqrt(weights.length));
   const halfSide = Math.floor(side / 2);
@@ -92,10 +93,11 @@ function roundTime(config: PaintConfig): number {
   return config.greenTimes;
 }
 
-export type Size = {
+type Size = {
   width: number;
   height: number;
 };
+
 const randRangeGlobal = (a: number, b: number) =>
   Math.round(Math.random() * (b - a) + a);
 
