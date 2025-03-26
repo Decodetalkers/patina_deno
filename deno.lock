@@ -4,6 +4,7 @@
     "jsr:@luca/esbuild-deno-loader@~0.11.1": "0.11.1",
     "jsr:@nobody/styled-components-deno@~0.8.2": "0.8.2",
     "jsr:@nobody/tananoni@~0.4.9": "0.4.9",
+    "jsr:@std/assert@1": "1.0.11",
     "jsr:@std/assert@^1.0.9": "1.0.11",
     "jsr:@std/async@^1.0.9": "1.0.10",
     "jsr:@std/bytes@^1.0.2": "1.0.4",
@@ -46,7 +47,7 @@
       "integrity": "9a766a5631d8831fede950441c748dff5218b61532f618822e0f34dd63d6874a",
       "dependencies": [
         "jsr:@luca/esbuild-deno-loader",
-        "jsr:@std/assert",
+        "jsr:@std/assert@^1.0.9",
         "jsr:@std/async",
         "jsr:@std/fs",
         "jsr:@std/path@^1.0.8",
@@ -340,6 +341,7 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@std/assert@1",
       "npm:preact@*"
     ],
     "members": {
