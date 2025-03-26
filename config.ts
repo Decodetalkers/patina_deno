@@ -32,8 +32,8 @@ export type Plain = {
 
 export type PaintConfig = {
   usePopUp: boolean;
-  popUp: number;
-  greenTimes: number;
+  popDim: number;
+  greenDeepth: number;
   rand: boolean;
   maxWidth: number;
   preview: boolean;

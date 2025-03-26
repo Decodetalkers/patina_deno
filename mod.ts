@@ -88,9 +88,9 @@ const convolute = (pixels: ImageData, weights: number[]): ImageData => {
 
 function roundTime(config: PaintConfig): number {
   if (config.usePopUp) {
-    return Math.pow(config.popUp, 2);
+    return Math.pow(config.popDim, 2);
   }
-  return config.greenTimes;
+  return config.greenDeepth;
 }
 
 type Size = {
@@ -100,6 +100,10 @@ type Size = {
 
 const randRangeGlobal = (a: number, b: number) =>
   Math.round(Math.random() * (b - a) + a);
+
+function deepinCopy<T>(o: T): T {
+  return JSON.parse(JSON.stringify(o));
+}
 
 export class PantaData {
   img: HTMLImageElement;
@@ -135,6 +139,30 @@ export class PantaData {
     this.popCtx = this.popCanvas.getContext("2d")!;
   }
 
+  get isPop(): boolean {
+    return this.config.usePopUp;
+  }
+
+  get popUpDim(): number {
+    return this.config.popDim;
+  }
+
+  get greenDeepth(): number {
+    return this.config.greenDeepth;
+  }
+
+  async setGreenDeepth(deepth: number) {
+    const newConfig: PaintConfig = deepinCopy(this.config);
+    newConfig.greenDeepth = deepth;
+    await this.setConfig(newConfig);
+  }
+
+  async setPopUpDim(dim: number) {
+    const newConfig: PaintConfig = deepinCopy(this.config);
+    newConfig.popDim = dim;
+    await this.setConfig(newConfig);
+  }
+
   // set config until running process is done
   setConfig(config: PaintConfig): Promise<void> {
     return new Promise((resolve, _) => {
@@ -161,7 +189,7 @@ export class PantaData {
   }
 
   get outputUrl(): string {
-    if (this.config.popUp) {
+    if (this.config.popDim) {
       return this.imgOutputPop.src;
     } else {
       return this.imgOutput.src;
@@ -466,11 +494,11 @@ export class PantaData {
 
           const isPop = this.config.usePopUp;
 
-          let popWidth = width * this.config.popUp;
-          let popHeight = height * this.config.popUp;
+          let popWidth = width * this.config.popDim;
+          let popHeight = height * this.config.popDim;
 
           if (isPop) {
-            if (this.config.popUp && width < this.config.maxWidth) {
+            if (this.config.popDim && width < this.config.maxWidth) {
               const maxPopWidth = this.config.maxWidth * 2;
               if (popWidth > maxPopWidth) {
                 popWidth = maxPopWidth;
@@ -524,13 +552,13 @@ export class PantaData {
               if (isPop) {
                 this.popCtx.drawImage(
                   this.imgOutput,
-                  ((this.currentTime - 1) % this.config.popUp) * popWidth /
-                    this.config.popUp,
-                  Math.floor((this.currentTime - 1) / this.config.popUp) *
+                  ((this.currentTime - 1) % this.config.popDim) * popWidth /
+                    this.config.popDim,
+                  Math.floor((this.currentTime - 1) / this.config.popDim) *
                     popHeight /
-                    this.config.popUp,
-                  popWidth / this.config.popUp,
-                  popHeight / this.config.popUp,
+                    this.config.popDim,
+                  popWidth / this.config.popDim,
+                  popHeight / this.config.popDim,
                 );
               }
               callback && callback(this);
@@ -572,9 +600,9 @@ export const defaultConfig: PaintConfig = {
   green: 0.5,
   gy: 0.5,
   convoluteName: "sauna",
-  greenTimes: 100,
+  greenDeepth: 100,
   usePopUp: true,
-  popUp: 10,
+  popDim: 4,
   quality: 80,
 
   fonts: ["PingFang SC", "Microsoft YaHei", "sans-serif"],
