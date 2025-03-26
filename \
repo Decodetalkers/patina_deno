@@ -6,13 +6,17 @@ import styled, { AttributeGroup } from "styled-components-deno";
 
 import { defaultConfig, PantaData } from "@nobody/patina";
 
-const OutputBox = styled.div`
+const OutputBox = styled.img`
   img {
     display: block;
     object-fit: contain;
     with: 50%;
     float: left;
   }
+`;
+
+const ControlBox = styled.div`
+  overflow: hidden
 `;
 
 const appKeys = [`data-running="true"`] as const;
@@ -46,7 +50,7 @@ function ImagePreview() {
 
   const imgRef = useRef<HTMLImageElement>(paintaData.srcImg);
   const [srcUrl, setSrcUrl] = useState(paintaData.srcUrl);
-  const [running, setRunning] = useState(paintaData.isRunning);
+  const [srcRunning, setRunning] = useState(paintaData.isRunning);
   const [outputUrl, setOutputUrl] = useState(paintaData.outputUrl);
   const [previewWidth, setPreviewWidth] = useState(paintaData.srcWidth);
 
@@ -79,7 +83,7 @@ function ImagePreview() {
     }
   });
   return (
-    <div className={appCSS} data-running={running}>
+    <div className={appCSS} data-running={true}>
       <OutputBox>
         <img src={srcUrl} ref={imgRef} width={previewWidth} />
         <img src={outputUrl} width={previewWidth} />

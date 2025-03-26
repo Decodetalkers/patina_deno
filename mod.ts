@@ -141,6 +141,10 @@ export class PantaData {
     this._previewWidth = this.config.previewWidth;
   }
 
+  get isRunning(): boolean {
+    return this.running;
+  }
+
   get previewWidth(): number {
     return this._previewWidth || this.srcWidth;
   }
@@ -439,6 +443,7 @@ export class PantaData {
           return;
         }
 
+        this.running = true;
         const naturalWidth = imageEl.naturalWidth;
         const naturalHeight = imageEl.naturalHeight;
 
@@ -569,6 +574,7 @@ export class PantaData {
               } else {
                 this.running = false;
                 this.currentTime = 0;
+                callback && callback(this);
                 resolve();
               }
             };
