@@ -106,18 +106,17 @@ function deepinCopy<T>(o: T): T {
 }
 
 export class PantaData {
-  img: HTMLImageElement;
-  imgOutput: HTMLImageElement;
-  imgOutputPop: HTMLImageElement;
-  running: boolean = false;
-  width?: number;
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  popCanvas: HTMLCanvasElement;
-  popCtx: CanvasRenderingContext2D;
-  config: PaintConfig;
+  private img: HTMLImageElement;
+  private imgOutput: HTMLImageElement;
+  private imgOutputPop: HTMLImageElement;
+  private running: boolean = false;
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private popCanvas: HTMLCanvasElement;
+  private popCtx: CanvasRenderingContext2D;
+  private config: PaintConfig;
 
-  currentTime: number = 0;
+  private currentTime: number = 0;
 
   private randRange = (a: number, b: number): number =>
     Math.round(Math.random() * (b - a) + a);
@@ -464,7 +463,6 @@ export class PantaData {
 
         this.canvas.width = width;
         this.canvas.height = height;
-        this.width = width;
 
         // prepare is finished, then we need to transform the output
         requestAnimationFrame((_) => {

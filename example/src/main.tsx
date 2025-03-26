@@ -58,7 +58,7 @@ function ImagePreview() {
       if (file && isImageRegex.test(file.type)) {
         readFileToURl(file, (src) => {
           paintaData.setImageSrc(src);
-          setSrcUrl(paintaData.img.src);
+          setSrcUrl(paintaData.srcImg.src);
           setSrcWidth(paintaData.srcWidth);
           setOutputUrl(paintaData.outputUrl);
         });
