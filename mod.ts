@@ -151,6 +151,7 @@ const randRangeGlobal = (a: number, b: number) =>
 export class PantaData {
   img: HTMLImageElement;
   imgOutput: HTMLImageElement;
+  imgOutputPop: HTMLImageElement;
   running: boolean = false;
   width?: number;
   canvas: HTMLCanvasElement;
@@ -174,6 +175,7 @@ export class PantaData {
     this.config = config || defaultConfig;
     this.img = img || new Image();
     this.imgOutput = new Image();
+    this.imgOutputPop = new Image();
     this.canvas = document.createElement("canvas");
     this.popCanvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d")!;
@@ -206,7 +208,11 @@ export class PantaData {
   }
 
   get outputUrl(): string {
-    return this.imgOutput.src;
+    if (this.config.popUp) {
+      return this.imgOutputPop.src;
+    } else {
+      return this.imgOutput.src;
+    }
   }
 
   get srcUrl(): string {
@@ -534,18 +540,14 @@ export class PantaData {
             if (config.green) {
               this.drawGreenBase({ width, height });
             }
-            let src;
-            if (isPop) {
-              src = this.popCanvas.toDataURL(
-                "image/jpeg",
-                config.quality / 100 + Math.random() * 0.05,
-              );
-            } else {
-              src = this.canvas.toDataURL(
-                "image/jpeg",
-                config.quality / 100 + Math.random() * 0.1,
-              );
-            }
+            const popSrc = this.popCanvas.toDataURL(
+              "image/jpeg",
+              config.quality / 100 + Math.random() * 0.05,
+            );
+            const src = this.canvas.toDataURL(
+              "image/jpeg",
+              config.quality / 100 + Math.random() * 0.1,
+            );
             this.imgOutput.onload = (_) => {
               const randi = 2;
               const randPix = this.randRange(-randi, randi);
@@ -578,7 +580,7 @@ export class PantaData {
                 );
               }
               callback && callback(this);
-              if (this.currentTime < theRoundTime) {
+              if (this.currentTime <= theRoundTime) {
                 requestOnce();
               } else {
                 this.running = false;
@@ -587,6 +589,7 @@ export class PantaData {
               }
             };
             this.imgOutput.src = src;
+            this.imgOutputPop.src = popSrc;
           };
 
           requestOnce();
