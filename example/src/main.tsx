@@ -44,7 +44,7 @@ function ImagePreview() {
         await paintaData.patina((data) => {
           setSrcUrl(data.srcImg.src);
           setSrcWidth(paintaData.srcWidth);
-          setOutputUrl(data.outputUrl || "");
+          setOutputUrl(data.outputUrl);
         });
       } catch (e) {
         console.error(e);
@@ -60,7 +60,7 @@ function ImagePreview() {
           paintaData.setImageSrc(src);
           setSrcUrl(paintaData.img.src);
           setSrcWidth(paintaData.srcWidth);
-          setOutputUrl(paintaData.outputUrl || "");
+          setOutputUrl(paintaData.outputUrl);
         });
       }
     }
