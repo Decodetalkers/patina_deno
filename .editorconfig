@@ -3,3 +3,7 @@ root = true
 [*.{css}]
 indent_style = tab
 indent_size = 1
+
+[*.{ts, tsx}]
+indent_style = space
+indent_size = 2

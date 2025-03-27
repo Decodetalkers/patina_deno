@@ -173,6 +173,19 @@ export class PantaData {
     return this.getConfigKey("greenTimes");
   }
 
+  get userNames(): string[] {
+    return this.getConfigKey("userNames");
+  }
+  get randEnabled(): boolean {
+    return this.getConfigKey("rand");
+  }
+  async setIsRand(rand: boolean) {
+    await this.setConfigKey("rand", rand);
+  }
+  async setUserNames(names: string[]) {
+    await this.setConfigKey("userNames", names);
+  }
+
   async setGreenTimes(greenDeepth: number) {
     await this.setConfigKey("greenTimes", greenDeepth);
   }
@@ -195,6 +208,7 @@ export class PantaData {
   async setUseWaterMark(useWaterMark: boolean) {
     await this.setConfigKey("watermark", useWaterMark);
   }
+
   async setConfigKey<T extends keyof PatinaConfig>(
     key: T,
     value: PatinaConfig[T],
@@ -628,7 +642,7 @@ export class PantaData {
 }
 
 export const defaultConfig: PatinaConfig = {
-  rand: false,
+  rand: true,
   preview: true,
   previewWidth: 400,
   maxWidth: 500,

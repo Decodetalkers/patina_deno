@@ -1,11 +1,13 @@
 import { defaultConfig, type PatinaConfig } from "@nobody/patina";
 export type Cookie = {
   usePop?: boolean;
+  useRand?: boolean;
   popDim?: number;
   quality?: number;
   waterMark?: boolean;
   green?: boolean;
   yearsAgo?: number;
+  userNames?: string[];
 };
 
 export function getCookie(): Cookie {
@@ -37,12 +39,19 @@ export function getInitConfig(initConfig: Cookie = {}): PatinaConfig {
   if (cookieConfig.usePop != undefined) {
     config.usePop = cookieConfig.usePop;
   }
-
+  if (cookieConfig.useRand != undefined) {
+    config.rand = cookieConfig.useRand;
+  }
   if (cookieConfig.popDim != undefined) {
     config.popDim = cookieConfig.popDim;
   }
+
   if (cookieConfig.quality != undefined) {
     config.quality = cookieConfig.quality;
+  }
+
+  if (cookieConfig.userNames != undefined) {
+    config.userNames = cookieConfig.userNames;
   }
   return config;
 }

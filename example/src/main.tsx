@@ -96,8 +96,10 @@ function ImagePreview() {
   const [yearsAgo, setYearsAgo] = useState(paintaData.greenTimes);
   const [popDim, setPopDim] = useState(paintaData.popDim);
   const [quality, setQualty] = useState(paintaData.quality);
+  const [userNames, setUserNames] = useState(paintaData.userNames.join("\n"));
+  const [isRand, setIsRand] = useState(paintaData.randEnabled);
 
-  const loaded = async () => {
+  const reload = async () => {
     try {
       await paintaData.patina((data) => {
         setPreviewWidth(paintaData.previewWidth);
@@ -145,7 +147,7 @@ function ImagePreview() {
     setGreen(isGreen);
     initConfig.green = isGreen;
     updateCookie(initConfig);
-    await loaded();
+    await reload();
   };
   const onWaterMarkChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
@@ -155,7 +157,7 @@ function ImagePreview() {
     initConfig.waterMark = isWaterMark;
     updateCookie(initConfig);
     setUseWaterMark(isWaterMark);
-    await loaded();
+    await reload();
   };
   const onYearsChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
@@ -165,7 +167,7 @@ function ImagePreview() {
     initConfig.yearsAgo = step;
     updateCookie(initConfig);
     setYearsAgo(step);
-    await loaded();
+    await reload();
   };
   const onPopDimChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
@@ -175,7 +177,7 @@ function ImagePreview() {
     initConfig.popDim = step;
     updateCookie(initConfig);
     setPopDim(step);
-    await loaded();
+    await reload();
   };
   const onQualityChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
@@ -185,7 +187,7 @@ function ImagePreview() {
     initConfig.quality = step;
     updateCookie(initConfig);
     setQualty(step);
-    await loaded();
+    await reload();
   };
   const onPopChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
@@ -195,7 +197,27 @@ function ImagePreview() {
     setPop(isPop);
     initConfig.usePop = isPop;
     updateCookie(initConfig);
-    await loaded();
+    await reload();
+  };
+  const onRandChanged = async (
+    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+  ) => {
+    const isRand = e.currentTarget.checked;
+    paintaData.setIsRand(isRand);
+    setIsRand(isRand);
+    initConfig.usePop = isRand;
+    updateCookie(initConfig);
+    await reload();
+  };
+  const onUserNamesChanged = (
+    e: JSX.TargetedEvent<HTMLTextAreaElement, Event>,
+  ) => {
+    const originNames = e.currentTarget.value;
+    const names = originNames.split("\n");
+    paintaData.setUserNames(names);
+    setUserNames(originNames);
+    initConfig.userNames = names;
+    updateCookie(initConfig);
   };
   const resetDownloadName = () => {
     setDownloadName(generateDownloadName());
@@ -213,7 +235,7 @@ function ImagePreview() {
           src={srcUrl}
           ref={imgRef}
           width={previewWidth}
-          onLoad={loaded}
+          onLoad={reload}
         />
         <img src={outputUrl} width={previewWidth} />
       </OutputBox>
@@ -256,6 +278,18 @@ function ImagePreview() {
             />
             Pop
           </label>
+          {useWaterMark && (
+            <>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={isRand}
+                  onChange={onRandChanged}
+                />
+                Rand
+              </label>
+            </>
+          )}
         </InputBox>
         <InputBox>
           {!isPop && isGreen &&
@@ -273,6 +307,7 @@ function ImagePreview() {
                 {yearsAgo}
               </>
             )}
+
           {isPop &&
             (
               <>
@@ -297,6 +332,19 @@ function ImagePreview() {
             onChange={onQualityChanged}
           />
           {quality}
+          {useWaterMark && (
+            <>
+              <h4>WaterMarks</h4>
+              <textarea
+                value={userNames}
+                cols={30}
+                rows={10}
+                onChange={onUserNamesChanged}
+              >
+              </textarea>
+              <button type="button" onClick={reload}>Reload</button>
+            </>
+          )}
         </InputBox>
       </CtrlBox>
     </App>
