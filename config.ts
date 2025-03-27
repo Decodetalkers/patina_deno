@@ -31,7 +31,7 @@ export type Plain = {
 };
 
 export type PaintConfig = {
-  usePopUp: boolean;
+  usePop: boolean;
   popDim: number;
   greenDeepth: number;
   rand: boolean;
@@ -45,7 +45,8 @@ export type PaintConfig = {
   watermarkShadowAlpha: number;
   watermarkPlan: number;
 
-  green?: number;
+  isGreen: boolean;
+  green: number;
   gy: number;
   userNames: string[];
 

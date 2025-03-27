@@ -1,10 +1,12 @@
-import { render } from "preact";
+import { JSX, render } from "preact";
 
 import { useRef, useState } from "preact/hooks";
 
-import styled, { AttributeGroup, StyleGroup } from "styled-components-deno";
+import styled, { AttributeGroup } from "styled-components-deno";
 
 import { defaultConfig, PantaData } from "@nobody/patina";
+import { CtrlBox, ctrlBox } from "../components/ControlBox.tsx";
+import { App } from "../components/App.tsx";
 
 const OutputBox = styled.div`
   overflow: hidden;
@@ -30,16 +32,6 @@ const OutputBox = styled.div`
     }
   }
 `;
-const CtrlBoxName = ["ctrl-box"] as const;
-
-const CtrlBoxGroup = new StyleGroup(CtrlBoxName, "ctrl-box");
-
-CtrlBoxGroup.setCSS("ctrl-box")`
-  padding: 10px 15px
-`;
-
-const ctrlBox = CtrlBoxGroup.generate();
-
 const InputBox = styled.div`
   padding: 4px 0px;
 `;
@@ -56,8 +48,6 @@ appStyle.setCSS('data-running="true"')`
 `;
 
 appStyle.generate();
-
-const appCSS = appStyle.groupName;
 
 const mount = document.getElementById("mount");
 const isImageRegex = /^image\/(.+)$/;
@@ -84,7 +74,6 @@ form.appendChild(input);
 function generateDownloadName(): string {
   return `[lab.magiconch.com][电子包浆]-${+Date
     .now()}.jpg`;
-  // a.click();
 }
 
 function ImagePreview() {
@@ -94,6 +83,9 @@ function ImagePreview() {
   const [running, setRunning] = useState(paintaData.isRunning);
   const [outputUrl, setOutputUrl] = useState(paintaData.outputUrl);
   const [previewWidth, setPreviewWidth] = useState(paintaData.srcWidth);
+  const [isGreen, setGreen] = useState(paintaData.isGreen);
+  const [isPop, setPop] = useState(paintaData.isPop);
+  const [useWaterMark, setUseWaterMark] = useState(paintaData.useWaterMark);
 
   const loaded = async () => {
     try {
@@ -135,12 +127,36 @@ function ImagePreview() {
     input.click();
   };
 
+  const onGreenChanged = async (
+    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+  ) => {
+    const isGreen = e.currentTarget.checked;
+    paintaData.setIsGreen(isGreen);
+    setGreen(isGreen);
+    await loaded();
+  };
+  const onWaterMarkChanged = async (
+    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+  ) => {
+    const isWaterMark = e.currentTarget.checked;
+    paintaData.setUseWaterMark(isWaterMark);
+    setUseWaterMark(isWaterMark);
+    await loaded();
+  };
+  const onPopChanged = async (
+    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+  ) => {
+    const isPop = e.currentTarget.checked;
+    paintaData.setIsPop(isPop);
+    setPop(isPop);
+    await loaded();
+  };
   const resetDownloadName = () => {
     setDownloadName(generateDownloadName());
   };
 
   return (
-    <div className={appCSS} data-running={running}>
+    <App dataRunning={running}>
       <OutputBox>
         <img
           className="source-image"
@@ -151,10 +167,10 @@ function ImagePreview() {
         />
         <img src={outputUrl} width={previewWidth} />
       </OutputBox>
-      <div className={ctrlBox["ctrl-box"]}>
+      <CtrlBox>
         <InputBox>
           <button type="submit" onClick={submitCallBack}>
-            Choose or clip Picture
+            Choose or paste picture here
           </button>
           <a
             className="btn"
@@ -165,15 +181,41 @@ function ImagePreview() {
             Download
           </a>
         </InputBox>
-      </div>
-    </div>
+        <InputBox>
+          <label>
+            <input
+              type="checkbox"
+              checked={isGreen}
+              onChange={onGreenChanged}
+            />
+            Green
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={useWaterMark}
+              onChange={onWaterMarkChanged}
+            />
+            WaterMark
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={isPop}
+              onChange={onPopChanged}
+            />
+            Pop
+          </label>
+        </InputBox>
+      </CtrlBox>
+    </App>
   );
 }
 
-function App() {
+function Patina() {
   return <ImagePreview />;
 }
 
 if (mount) {
-  render(<App />, mount!);
+  render(<Patina />, mount!);
 }

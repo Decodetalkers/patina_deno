@@ -87,7 +87,7 @@ const convolute = (pixels: ImageData, weights: number[]): ImageData => {
 };
 
 function roundTime(config: PaintConfig): number {
-  if (config.usePopUp) {
+  if (config.usePop) {
     return Math.pow(config.popDim, 2);
   }
   return config.greenDeepth;
@@ -150,27 +150,57 @@ export class PantaData {
   }
 
   get isPop(): boolean {
-    return this.config.usePopUp;
+    return this.getConfigKey("usePop");
+  }
+
+  get useWaterMark(): boolean {
+    return this.getConfigKey("watermark");
+  }
+
+  get isGreen(): boolean {
+    return this.getConfigKey("isGreen");
   }
 
   get popUpDim(): number {
-    return this.config.popDim;
+    return this.getConfigKey("popDim");
   }
 
   get greenDeepth(): number {
-    return this.config.greenDeepth;
+    return this.getConfigKey("greenDeepth");
   }
 
-  async setGreenDeepth(deepth: number) {
+  async setGreenDeepth(greenDeepth: number) {
+    await this.setConfigKey("greenDeepth", greenDeepth);
+  }
+
+  async setPopDim(dim: number) {
+    await this.setConfigKey("popDim", dim);
+  }
+
+  async setIsPop(usePop: boolean) {
+    await this.setConfigKey("usePop", usePop);
+  }
+
+  async setIsGreen(isGreen: boolean) {
+    await this.setConfigKey("isGreen", isGreen);
+  }
+
+  async setUseWaterMark(useWaterMark: boolean) {
+    await this.setConfigKey("watermark", useWaterMark);
+  }
+  async setConfigKey<T extends keyof PaintConfig>(
+    key: T,
+    value: PaintConfig[T],
+  ) {
     const newConfig: PaintConfig = deepinCopy(this.config);
-    newConfig.greenDeepth = deepth;
+    newConfig[key] = value;
     await this.setConfig(newConfig);
   }
 
-  async setPopUpDim(dim: number) {
-    const newConfig: PaintConfig = deepinCopy(this.config);
-    newConfig.popDim = dim;
-    await this.setConfig(newConfig);
+  getConfigKey<T extends keyof PaintConfig>(
+    key: T,
+  ): PaintConfig[T] {
+    return this.config[key];
   }
 
   // set config until running process is done
@@ -199,7 +229,7 @@ export class PantaData {
   }
 
   get outputUrl(): string {
-    if (this.config.popDim) {
+    if (this.config.usePop) {
       return this.imgOutputPop.src;
     } else {
       return this.imgOutput.src;
@@ -346,7 +376,7 @@ export class PantaData {
 
     for (let i = 0; i < pixelData.length; i += 4) {
       //绿化
-      if (config.green) {
+      if (config.isGreen) {
         const gAdd = config.green * 4;
         pixelData[i] -= gAdd * config.gy;
         pixelData[i + 1] -= gAdd;
@@ -499,7 +529,7 @@ export class PantaData {
             this.drawOthers({ width, height });
           }
 
-          const isPop = this.config.usePopUp;
+          const isPop = this.config.usePop;
 
           let popWidth = width * this.config.popDim;
           let popHeight = height * this.config.popDim;
@@ -526,7 +556,7 @@ export class PantaData {
             if (config.watermark) {
               this.drawWaterMark({ width, height });
             }
-            if (config.green) {
+            if (config.isGreen) {
               this.drawGreenBase({ width, height });
             }
             const popSrc = this.popCanvas.toDataURL(
@@ -606,11 +636,12 @@ export const defaultConfig: PaintConfig = {
   darkNoise: 5,
   contrast: 0.5,
   light: 0.5,
+  isGreen: true,
   green: 0.5,
   gy: 0.5,
   convoluteName: "sauna",
-  greenDeepth: 100,
-  usePopUp: true,
+  greenDeepth: 10,
+  usePop: true,
   popDim: 4,
   quality: 80,
 
