@@ -1773,7 +1773,7 @@ function ImagePreview() {
   };
   return /* @__PURE__ */ u3(App, { dataRunning: running, children: [
     /* @__PURE__ */ u3("header", { children: [
-      /* @__PURE__ */ u3("h1", { children: "Plazma, Picture from ancient time" }),
+      /* @__PURE__ */ u3("h1", { children: "Plazma, Pictures from ancient time" }),
       /* @__PURE__ */ u3("p", { children: "Make the emoticons have a vintage look" })
     ] }),
     /* @__PURE__ */ u3(OutputBox, { children: [
