@@ -331,7 +331,7 @@ export class PantaData {
 
   /**
    * Get the source image srcWidth
-   * it will return the simallar one between the maxWidth in config and teh naturalWidth of image
+   * it will return the simallar one between the maxWidth in config and the naturalWidth of image
    */
   get srcWidth(): number {
     return Math.min(this.config.maxWidth, this.srcImg.naturalWidth);
