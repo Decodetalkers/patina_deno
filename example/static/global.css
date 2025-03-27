@@ -1,13 +1,49 @@
+@font-face {
+	font-family: ZpixLocal;
+	src: url(zpix-split.woff);
+}
+
 html,
 body {
 	margin: 0;
 	padding: 0;
 	overflow-x: hidden;
-	font-family: Arial, Helvetica, sans-serif;
+	font: 400 12px/1.4 ZpixLocal, sans-serif;
 	font-feature-settings: 'tnum';
 	background-color: #eefee4;
 	background-image: linear-gradient(45deg, #e0ffde 0%, #fafedd 100%);
 	color: #215200;
+}
+
+header {
+	padding: 1.8em;
+	line-height: 1.5;
+}
+
+header p {
+	margin: 0;
+	opacity: .5;
+	text-indent: .5em;
+}
+
+header h1 {
+	text-shadow: 2px 2px 0 #ff658c, -2px -2px 0 #77cdc7;
+}
+
+
+@media(min-width:600px) {
+	header {
+		font-size: 1.5em;
+	}
+}
+
+
+h3 {
+	font-size: 15px;
+}
+
+h4 {
+	font-size: 12px;
 }
 
 button,

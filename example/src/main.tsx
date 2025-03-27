@@ -203,6 +203,10 @@ function ImagePreview() {
 
   return (
     <App dataRunning={running}>
+      <header>
+        <h1>Plazma, Picture from ancient time</h1>
+        <p>Make the emoticons have a vintage look</p>
+      </header>
       <OutputBox>
         <img
           className="source-image"
@@ -283,17 +287,16 @@ function ImagePreview() {
                 />
                 {popDim}
               </>
-            )}{" "}
-            <h4>Quality</h4>
-            <input
-              type="range"
-              min={1}
-              max={100}
-              step={1}
-              value={quality}
-              onChange={onQualityChanged}
-            />
-            {quality}
+            )} <h4>Quality</h4>
+          <input
+            type="range"
+            min={1}
+            max={100}
+            step={1}
+            value={quality}
+            onChange={onQualityChanged}
+          />
+          {quality}
         </InputBox>
       </CtrlBox>
     </App>

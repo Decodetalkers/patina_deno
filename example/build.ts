@@ -27,7 +27,7 @@ const route = new Route()
       [{ src: "main.js" }],
     )
       .withViewport("width=device-width,user-scalable=0")
-      .withTitle("index")
+      .withTitle("Make picture from ancient time")
       .withLinkInfos([
         {
           type: "icon",
