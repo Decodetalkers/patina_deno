@@ -94,6 +94,8 @@ function ImagePreview() {
   const [isPop, setPop] = useState(paintaData.isPop);
   const [useWaterMark, setUseWaterMark] = useState(paintaData.useWaterMark);
   const [yearsAgo, setYearsAgo] = useState(paintaData.greenTimes);
+  const [popDim, setPopDim] = useState(paintaData.popDim);
+  const [quality, setQualty] = useState(paintaData.quality);
 
   const loaded = async () => {
     try {
@@ -165,6 +167,26 @@ function ImagePreview() {
     setYearsAgo(step);
     await loaded();
   };
+  const onPopDimChanged = async (
+    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+  ) => {
+    const step = parseInt(e.currentTarget.value);
+    paintaData.setPopDim(step);
+    initConfig.popDim = step;
+    updateCookie(initConfig);
+    setPopDim(step);
+    await loaded();
+  };
+  const onQualityChanged = async (
+    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+  ) => {
+    const step = parseInt(e.currentTarget.value);
+    paintaData.setQualty(step);
+    initConfig.quality = step;
+    updateCookie(initConfig);
+    setQualty(step);
+    await loaded();
+  };
   const onPopChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
   ) => {
@@ -231,21 +253,48 @@ function ImagePreview() {
             Pop
           </label>
         </InputBox>
-        {!isPop &&
-          (
-            <InputBox>
-              <h4>YearsAgo</h4>
-              <input
-                type="range"
-                min={1}
-                max={100}
-                step={1}
-                value={yearsAgo}
-                onChange={onYearsChanged}
-              />
-              {yearsAgo}
-            </InputBox>
-          )}
+        <InputBox>
+          {!isPop && isGreen &&
+            (
+              <>
+                <h4>YearsAgo</h4>
+                <input
+                  type="range"
+                  min={1}
+                  max={100}
+                  step={1}
+                  value={yearsAgo}
+                  onChange={onYearsChanged}
+                />
+                {yearsAgo}
+              </>
+            )}
+          {isPop &&
+            (
+              <>
+                <h4>PopDIm</h4>
+                <input
+                  type="range"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={popDim}
+                  onChange={onPopDimChanged}
+                />
+                {popDim}
+              </>
+            )}{" "}
+            <h4>Quality</h4>
+            <input
+              type="range"
+              min={1}
+              max={100}
+              step={1}
+              value={quality}
+              onChange={onQualityChanged}
+            />
+            {quality}
+        </InputBox>
       </CtrlBox>
     </App>
   );

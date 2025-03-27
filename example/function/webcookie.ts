@@ -1,6 +1,8 @@
 import { defaultConfig, type PatinaConfig } from "@nobody/patina";
 export type Cookie = {
   usePop?: boolean;
+  popDim?: number;
+  quality?: number;
   waterMark?: boolean;
   green?: boolean;
   yearsAgo?: number;
@@ -36,6 +38,12 @@ export function getInitConfig(initConfig: Cookie = {}): PatinaConfig {
     config.usePop = cookieConfig.usePop;
   }
 
+  if (cookieConfig.popDim != undefined) {
+    config.popDim = cookieConfig.popDim;
+  }
+  if (cookieConfig.quality != undefined) {
+    config.quality = cookieConfig.quality;
+  }
   return config;
 }
 

@@ -161,8 +161,12 @@ export class PantaData {
     return this.getConfigKey("isGreen");
   }
 
-  get popUpDim(): number {
+  get popDim(): number {
     return this.getConfigKey("popDim");
+  }
+
+  get quality(): number {
+    return this.getConfigKey("quality");
   }
 
   get greenTimes(): number {
@@ -177,6 +181,9 @@ export class PantaData {
     await this.setConfigKey("popDim", dim);
   }
 
+  async setQualty(quality: number) {
+    await this.setConfigKey("quality", quality);
+  }
   async setIsPop(usePop: boolean) {
     await this.setConfigKey("usePop", usePop);
   }
