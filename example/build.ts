@@ -35,7 +35,13 @@ const route = new Route()
         },
         { type: "stylesheet", href: "static/global.css" },
       ])
-      .withHotReload(),
+      .then((page) => {
+        if (release_mode) {
+          return page;
+        }
+        page.withHotReload();
+        return page;
+      }),
   )
   .withHotReload(!release_mode);
 const webgen = new GenWebsite()
