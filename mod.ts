@@ -197,6 +197,10 @@ export class PantaData {
     return this.getConfigKey("greenTimes");
   }
 
+  get greenStep(): number {
+    return this.getConfigKey("greenStep");
+  }
+
   /**
    * Get current being used userNames
    */
@@ -227,6 +231,10 @@ export class PantaData {
 
   async setGreenTimes(greenDeepth: number) {
     await this.setConfigKey("greenTimes", greenDeepth);
+  }
+
+  async setGreenStep(step: number) {
+    await this.setConfigKey("greenStep", step);
   }
 
   async setPopDim(dim: number) {
@@ -479,7 +487,7 @@ export class PantaData {
     for (let i = 0; i < pixelData.length; i += 4) {
       //绿化
       if (config.isGreen) {
-        const gAdd = config.green * 4;
+        const gAdd = config.greenStep * 4;
         pixelData[i] -= gAdd * config.gy;
         pixelData[i + 1] -= gAdd;
         pixelData[i + 2] -= gAdd;
@@ -631,7 +639,7 @@ export class PantaData {
             config.darkNoise ||
             config.contrast !== 1 ||
             config.light !== 0 ||
-            config.green !== 0 ||
+            config.greenStep !== 0 ||
             config.convoluteName
           ) {
             this.drawOthers({ width, height });
@@ -748,7 +756,7 @@ export const defaultConfig: PatinaConfig = {
   contrast: 0.5,
   light: 0.5,
   isGreen: true,
-  green: 0.5,
+  greenStep: 0.5,
   gy: 0.5,
   convoluteName: "sauna",
   greenTimes: 10,

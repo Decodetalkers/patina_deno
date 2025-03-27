@@ -46,7 +46,7 @@ export type PatinaConfig = {
   watermarkPlan: number;
 
   isGreen: boolean;
-  green: number;
+  greenStep: number;
   gy: number;
   userNames: string[];
 

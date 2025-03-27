@@ -3,6 +3,7 @@ export type Cookie = {
   usePop?: boolean;
   useRand?: boolean;
   popDim?: number;
+  greenStep?: number;
   quality?: number;
   waterMark?: boolean;
   green?: boolean;
@@ -26,6 +27,10 @@ export function getInitConfig(initConfig: Cookie = {}): PatinaConfig {
 
   if (cookieConfig.green != undefined) {
     config.isGreen = cookieConfig.green;
+  }
+
+  if (cookieConfig.greenStep != undefined) {
+    config.greenStep = cookieConfig.greenStep / 2;
   }
 
   if (cookieConfig.yearsAgo != undefined) {

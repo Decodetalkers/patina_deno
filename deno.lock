@@ -47,7 +47,8 @@
     "@nobody/styled-components-deno@0.10.2": {
       "integrity": "5a51c09abbe64658ea841048fb12705bb37c9f9e8186bac5bfdd7b3bc37e7d21",
       "dependencies": [
-        "npm:preact@^10.25.4"
+        "npm:preact@^10.25.4",
+        "npm:react"
       ]
     },
     "@nobody/tananoni@0.5.0": {

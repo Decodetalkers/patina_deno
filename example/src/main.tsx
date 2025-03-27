@@ -91,6 +91,7 @@ function ImagePreview() {
   const [outputUrl, setOutputUrl] = useState(paintaData.outputUrl);
   const [previewWidth, setPreviewWidth] = useState(paintaData.srcWidth);
   const [isGreen, setGreen] = useState(paintaData.isGreen);
+  const [greenStep, setGreenStep] = useState(paintaData.greenStep * 2);
   const [isPop, setPop] = useState(paintaData.isPop);
   const [useWaterMark, setUseWaterMark] = useState(paintaData.useWaterMark);
   const [yearsAgo, setYearsAgo] = useState(paintaData.greenTimes);
@@ -195,6 +196,21 @@ function ImagePreview() {
     initConfig.popDim = step;
     updateCookie(initConfig);
     setPopDim(step);
+    await reload();
+  };
+  const onGreenStepChanged = async (
+    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+  ) => {
+    if (paintaData.isRunning) {
+      return;
+    }
+    const step = parseInt(e.currentTarget.value);
+    // NOTE: because it is hard to control to set 0.5
+    // So here multiply 2 then divide 2
+    paintaData.setGreenStep(step / 2);
+    initConfig.greenStep = step;
+    updateCookie(initConfig);
+    setGreenStep(step);
     await reload();
   };
   const onQualityChanged = async (
@@ -349,7 +365,22 @@ function ImagePreview() {
                 />
                 {popDim}
               </>
-            )} <h4>Quality</h4>
+            )}
+          {isGreen && (
+            <>
+              <h4>Green Step</h4>
+              <input
+                type="range"
+                min={0}
+                max={50}
+                step={1}
+                value={greenStep}
+                onChange={onGreenStepChanged}
+              />
+              {greenStep / 2}
+            </>
+          )}
+          <h4>Quality</h4>
           <input
             type="range"
             min={1}
