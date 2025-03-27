@@ -37,7 +37,7 @@ const route = new Route()
       ])
       .withHotReload(),
   )
-  .withHotReload(true);
+  .withHotReload(!release_mode);
 const webgen = new GenWebsite()
   .withLogLevel("info")
   .withImportSource("npm:preact");

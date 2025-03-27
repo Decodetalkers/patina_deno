@@ -1,0 +1,43 @@
+name: Deploy Site
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Deno environment
+        uses: denoland/setup-deno@v2
+
+      - name: Verify formatting
+        run: deno fmt -c deno.json --check
+
+      - name: Run linter
+        run: deno lint -c deno.json
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup Deno environment
+        uses: denoland/setup-deno@v2
+
+      - name: Build site
+        run: |
+          cd example
+          deno task release
+
+      - name: "Deploy"
+        uses: JamesIves/github-pages-deploy-action@v4.7.3
+        with:
+          branch: gh-pages
+          folder: example/dist
