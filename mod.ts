@@ -141,47 +141,86 @@ export class PantaData {
     this._previewWidth = this.config.previewWidth;
   }
 
+  /**
+   * This can return the status of if the program is running
+   */
   get isRunning(): boolean {
     return this.running;
   }
 
+  /**
+   * Get the previewWidth
+   */
   get previewWidth(): number {
     return this._previewWidth || this.srcWidth;
   }
 
+  /**
+   * Get if it is using pop
+   */
   get isPop(): boolean {
     return this.getConfigKey("usePop");
   }
 
+  /**
+   * Get if it is using watermark
+   */
   get useWaterMark(): boolean {
     return this.getConfigKey("watermark");
   }
 
+  /**
+   * Get if it is green mode
+   */
   get isGreen(): boolean {
     return this.getConfigKey("isGreen");
   }
 
+  /**
+   * Get the dimensions of pop image
+   */
   get popDim(): number {
     return this.getConfigKey("popDim");
   }
 
+  /**
+   * Get the quality of image
+   */
   get quality(): number {
     return this.getConfigKey("quality");
   }
 
+  /**
+   * Get the greenTimes
+   */
   get greenTimes(): number {
     return this.getConfigKey("greenTimes");
   }
 
+  /**
+   * Get current being used userNames
+   */
   get userNames(): string[] {
     return this.getConfigKey("userNames");
   }
+
+  /**
+   * Get if rand is eanbled
+   */
   get randEnabled(): boolean {
     return this.getConfigKey("rand");
   }
+
+  /**
+   * Set to use rand watermark
+   */
   async setIsRand(rand: boolean) {
     await this.setConfigKey("rand", rand);
   }
+
+  /**
+   * Set the used userNames in watermark
+   */
   async setUserNames(names: string[]) {
     await this.setConfigKey("userNames", names);
   }
@@ -194,21 +233,37 @@ export class PantaData {
     await this.setConfigKey("popDim", dim);
   }
 
+  /**
+   * Set the image quality
+   */
   async setQualty(quality: number) {
     await this.setConfigKey("quality", quality);
   }
+
+  /**
+   * Set to use pop mode
+   */
   async setIsPop(usePop: boolean) {
     await this.setConfigKey("usePop", usePop);
   }
 
+  /**
+   * set to use green mode
+   */
   async setIsGreen(isGreen: boolean) {
     await this.setConfigKey("isGreen", isGreen);
   }
 
+  /**
+   * set the water mark
+   */
   async setUseWaterMark(useWaterMark: boolean) {
     await this.setConfigKey("watermark", useWaterMark);
   }
 
+  /**
+   * set the config value by key
+   */
   async setConfigKey<T extends keyof PatinaConfig>(
     key: T,
     value: PatinaConfig[T],
@@ -218,13 +273,18 @@ export class PantaData {
     await this.setConfig(newConfig);
   }
 
+  /**
+   * Get the config value by key
+   */
   getConfigKey<T extends keyof PatinaConfig>(
     key: T,
   ): PatinaConfig[T] {
     return this.config[key];
   }
 
-  // set config until running process is done
+  /**
+   * set config until running process is done
+   */
   setConfig(config: PatinaConfig): Promise<void> {
     return new Promise((resolve, _) => {
       if (JSON.stringify(config) === JSON.stringify(this.config)) {
@@ -245,10 +305,16 @@ export class PantaData {
     });
   }
 
+  /**
+   * Get the output Image
+   */
   get outputImg(): HTMLImageElement {
     return this.imgOutput;
   }
 
+  /**
+   * Get the outputUrl
+   */
   get outputUrl(): string {
     if (this.config.usePop) {
       return this.imgOutputPop.src;
@@ -256,23 +322,38 @@ export class PantaData {
       return this.imgOutput.src;
     }
   }
-
+  /**
+   * Get the source image url
+   */
   get srcUrl(): string {
     return this.srcImg.src;
   }
 
+  /**
+   * Get the source image srcWidth
+   * it will return the simallar one between the maxWidth in config and teh naturalWidth of image
+   */
   get srcWidth(): number {
     return Math.min(this.config.maxWidth, this.srcImg.naturalWidth);
   }
 
+  /**
+   * Get the source image
+   */
   get srcImg(): HTMLImageElement {
     return this.img;
   }
 
+  /**
+   * Set the source image
+   */
   set srcImg(img: HTMLImageElement) {
     this.img = img;
   }
 
+  /**
+   * Set the resource of the source image
+   */
   setImageSrc(src: string) {
     this.img.src = src;
   }
@@ -481,7 +562,13 @@ export class PantaData {
     );
   }
 
-  public patina(callback?: (data: PantaData) => void): Promise<void> {
+  /**
+   * This is an async program to paint the image.
+   * If return is boolean
+   * @param callback The callback function. It will be invoked very time a loop is finished
+   * @returns boolean, true means successfully done, false means maybe the process is already being called, so you cannot invoke it this time
+   */
+  public patina(callback?: (data: PantaData) => void): Promise<boolean> {
     const theRoundTime = roundTime(this.config);
     return new Promise((resolve, _) => {
       const patinaInside = () => {
@@ -490,7 +577,7 @@ export class PantaData {
 
         // because last config is still doing
         if (this.running) {
-          setTimeout(patinaInside, 100);
+          resolve(false);
           return;
         }
 
@@ -626,7 +713,7 @@ export class PantaData {
                 this.running = false;
                 this.currentTime = 0;
                 callback && callback(this);
-                resolve();
+                resolve(true);
               }
             };
             this.imgOutput.src = src;
@@ -641,6 +728,9 @@ export class PantaData {
   }
 }
 
+/**
+ * The default config
+ */
 export const defaultConfig: PatinaConfig = {
   rand: true,
   preview: true,

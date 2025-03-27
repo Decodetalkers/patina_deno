@@ -100,15 +100,11 @@ function ImagePreview() {
   const [isRand, setIsRand] = useState(paintaData.randEnabled);
 
   const reload = async () => {
-    try {
-      await paintaData.patina((data) => {
-        setPreviewWidth(paintaData.previewWidth);
-        setOutputUrl(data.outputUrl);
-        setRunning(data.isRunning);
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    await paintaData.patina((data) => {
+      setPreviewWidth(paintaData.previewWidth);
+      setOutputUrl(data.outputUrl);
+      setRunning(data.isRunning);
+    });
   };
   const readImage = (file: File) => {
     readFileToURl(file, (src) => {
@@ -120,6 +116,19 @@ function ImagePreview() {
   };
   document.addEventListener("paste", (e) => {
     const clipboardData = e.clipboardData;
+    if (clipboardData?.items[0]) {
+      const file = clipboardData.items[0].getAsFile();
+      if (file && isImageRegex.test(file.type)) {
+        readImage(file);
+      }
+    }
+  });
+  document.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
+  document.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const clipboardData = e.dataTransfer;
     if (clipboardData?.items[0]) {
       const file = clipboardData.items[0].getAsFile();
       if (file && isImageRegex.test(file.type)) {
@@ -162,6 +171,9 @@ function ImagePreview() {
   const onYearsChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
   ) => {
+    if (paintaData.isRunning) {
+      return;
+    }
     const step = parseInt(e.currentTarget.value);
     paintaData.setGreenTimes(step);
     initConfig.yearsAgo = step;
@@ -172,6 +184,9 @@ function ImagePreview() {
   const onPopDimChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
   ) => {
+    if (paintaData.isRunning) {
+      return;
+    }
     const step = parseInt(e.currentTarget.value);
     paintaData.setPopDim(step);
     initConfig.popDim = step;
@@ -182,6 +197,9 @@ function ImagePreview() {
   const onQualityChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
   ) => {
+    if (paintaData.isRunning) {
+      return;
+    }
     const step = parseInt(e.currentTarget.value);
     paintaData.setQualty(step);
     initConfig.quality = step;
