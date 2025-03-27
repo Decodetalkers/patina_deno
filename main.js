@@ -1696,6 +1696,9 @@ function ImagePreview() {
     input.click();
   };
   const onGreenChanged = async (e3) => {
+    if (paintaData.isRunning) {
+      return;
+    }
     const isGreen2 = e3.currentTarget.checked;
     paintaData.setIsGreen(isGreen2);
     setGreen(isGreen2);
@@ -1745,6 +1748,9 @@ function ImagePreview() {
     await reload();
   };
   const onPopChanged = async (e3) => {
+    if (paintaData.isRunning) {
+      return;
+    }
     const isPop2 = e3.currentTarget.checked;
     paintaData.setIsPop(isPop2);
     setPop(isPop2);
@@ -1753,6 +1759,9 @@ function ImagePreview() {
     await reload();
   };
   const onRandChanged = async (e3) => {
+    if (paintaData.isRunning) {
+      return;
+    }
     const isRand2 = e3.currentTarget.checked;
     paintaData.setIsRand(isRand2);
     setIsRand(isRand2);
