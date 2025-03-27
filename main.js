@@ -1017,6 +1017,9 @@ var PantaData = class {
   get greenTimes() {
     return this.getConfigKey("greenTimes");
   }
+  get greenStep() {
+    return this.getConfigKey("greenStep");
+  }
   /**
    * Get current being used userNames
    */
@@ -1043,6 +1046,9 @@ var PantaData = class {
   }
   async setGreenTimes(greenDeepth) {
     await this.setConfigKey("greenTimes", greenDeepth);
+  }
+  async setGreenStep(step) {
+    await this.setConfigKey("greenStep", step);
   }
   async setPopDim(dim) {
     await this.setConfigKey("popDim", dim);
@@ -1258,7 +1264,7 @@ var PantaData = class {
     }
     for (let i4 = 0; i4 < pixelData.length; i4 += 4) {
       if (config.isGreen) {
-        const gAdd = config.green * 4;
+        const gAdd = config.greenStep * 4;
         pixelData[i4] -= gAdd * config.gy;
         pixelData[i4 + 1] -= gAdd;
         pixelData[i4 + 2] -= gAdd;
@@ -1380,7 +1386,7 @@ var PantaData = class {
             width: naturalWidth,
             height: naturalHeight
           });
-          if (config.lightNoise || config.darkNoise || config.contrast !== 1 || config.light !== 0 || config.green !== 0 || config.convoluteName) {
+          if (config.lightNoise || config.darkNoise || config.contrast !== 1 || config.light !== 0 || config.greenStep !== 0 || config.convoluteName) {
             this.drawOthers({ width, height });
           }
           const isPop = this.config.usePop;
@@ -1482,7 +1488,7 @@ var defaultConfig = {
   contrast: 0.5,
   light: 0.5,
   isGreen: true,
-  green: 0.5,
+  greenStep: 0.5,
   gy: 0.5,
   convoluteName: "sauna",
   greenTimes: 10,
@@ -1544,6 +1550,9 @@ function getInitConfig(initConfig2 = {}) {
   const cookieConfig = initConfig2 || getCookie();
   if (cookieConfig.green != void 0) {
     config.isGreen = cookieConfig.green;
+  }
+  if (cookieConfig.greenStep != void 0) {
+    config.greenStep = cookieConfig.greenStep / 2;
   }
   if (cookieConfig.yearsAgo != void 0) {
     config.greenTimes = cookieConfig.yearsAgo;
@@ -1640,6 +1649,7 @@ function ImagePreview() {
   const [outputUrl, setOutputUrl] = d2(paintaData.outputUrl);
   const [previewWidth, setPreviewWidth] = d2(paintaData.srcWidth);
   const [isGreen, setGreen] = d2(paintaData.isGreen);
+  const [greenStep, setGreenStep] = d2(paintaData.greenStep * 2);
   const [isPop, setPop] = d2(paintaData.isPop);
   const [useWaterMark, setUseWaterMark] = d2(paintaData.useWaterMark);
   const [yearsAgo, setYearsAgo] = d2(paintaData.greenTimes);
@@ -1733,6 +1743,17 @@ function ImagePreview() {
     initConfig.popDim = step;
     updateCookie(initConfig);
     setPopDim(step);
+    await reload();
+  };
+  const onGreenStepChanged = async (e3) => {
+    if (paintaData.isRunning) {
+      return;
+    }
+    const step = parseInt(e3.currentTarget.value);
+    paintaData.setGreenStep(step / 2);
+    initConfig.greenStep = step;
+    updateCookie(initConfig);
+    setGreenStep(step);
     await reload();
   };
   const onQualityChanged = async (e3) => {
@@ -1888,7 +1909,21 @@ function ImagePreview() {
           ),
           popDim
         ] }),
-        " ",
+        isGreen && /* @__PURE__ */ u3(k, { children: [
+          /* @__PURE__ */ u3("h4", { children: "Green Step" }),
+          /* @__PURE__ */ u3(
+            "input",
+            {
+              type: "range",
+              min: 0,
+              max: 50,
+              step: 1,
+              value: greenStep,
+              onChange: onGreenStepChanged
+            }
+          ),
+          greenStep / 2
+        ] }),
         /* @__PURE__ */ u3("h4", { children: "Quality" }),
         /* @__PURE__ */ u3(
           "input",
