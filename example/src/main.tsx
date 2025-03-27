@@ -151,6 +151,9 @@ function ImagePreview() {
   const onGreenChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
   ) => {
+    if (paintaData.isRunning) {
+      return;
+    }
     const isGreen = e.currentTarget.checked;
     paintaData.setIsGreen(isGreen);
     setGreen(isGreen);
@@ -210,6 +213,9 @@ function ImagePreview() {
   const onPopChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
   ) => {
+    if (paintaData.isRunning) {
+      return;
+    }
     const isPop = e.currentTarget.checked;
     paintaData.setIsPop(isPop);
     setPop(isPop);
@@ -220,6 +226,9 @@ function ImagePreview() {
   const onRandChanged = async (
     e: JSX.TargetedEvent<HTMLInputElement, Event>,
   ) => {
+    if (paintaData.isRunning) {
+      return;
+    }
     const isRand = e.currentTarget.checked;
     paintaData.setIsRand(isRand);
     setIsRand(isRand);
