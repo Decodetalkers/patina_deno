@@ -30,10 +30,10 @@ export type Plain = {
   top: number;
 };
 
-export type PaintConfig = {
+export type PatinaConfig = {
   usePop: boolean;
   popDim: number;
-  greenDeepth: number;
+  greenTimes: number;
   rand: boolean;
   previewWidth?: number;
   maxWidth: number;
@@ -61,7 +61,7 @@ export type PaintConfig = {
   fonts: string[];
 };
 
-export function fontStringLists(config: PaintConfig): string {
+export function fontStringLists(config: PatinaConfig): string {
   const outputs = [];
 
   for (const font of config.fonts) {

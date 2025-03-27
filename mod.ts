@@ -7,11 +7,11 @@
 import {
   Convolutes,
   fontStringLists,
-  type PaintConfig,
+  type PatinaConfig,
   type Plain,
 } from "./config.ts";
 
-export type { ConvoluteKey, Convolutes } from "./config.ts";
+export type { ConvoluteKey, Convolutes, PatinaConfig } from "./config.ts";
 
 // Utility functions
 //
@@ -86,11 +86,11 @@ const convolute = (pixels: ImageData, weights: number[]): ImageData => {
   return output;
 };
 
-function roundTime(config: PaintConfig): number {
+function roundTime(config: PatinaConfig): number {
   if (config.usePop) {
     return Math.pow(config.popDim, 2);
   }
-  return config.greenDeepth;
+  return config.greenTimes;
 }
 
 type Size = {
@@ -114,7 +114,7 @@ export class PantaData {
   private ctx: CanvasRenderingContext2D;
   private popCanvas: HTMLCanvasElement;
   private popCtx: CanvasRenderingContext2D;
-  private config: PaintConfig;
+  private config: PatinaConfig;
 
   private _previewWidth?: number;
 
@@ -129,7 +129,7 @@ export class PantaData {
       () => this.randRange(0, 9999).toString(),
     ).replace(/_/g, () => k);
   };
-  constructor(config?: PaintConfig, img?: HTMLImageElement) {
+  constructor(config?: PatinaConfig, img?: HTMLImageElement) {
     this.config = config || defaultConfig;
     this.img = img || new Image();
     this.imgOutput = new Image();
@@ -165,12 +165,12 @@ export class PantaData {
     return this.getConfigKey("popDim");
   }
 
-  get greenDeepth(): number {
-    return this.getConfigKey("greenDeepth");
+  get greenTimes(): number {
+    return this.getConfigKey("greenTimes");
   }
 
-  async setGreenDeepth(greenDeepth: number) {
-    await this.setConfigKey("greenDeepth", greenDeepth);
+  async setGreenTimes(greenDeepth: number) {
+    await this.setConfigKey("greenTimes", greenDeepth);
   }
 
   async setPopDim(dim: number) {
@@ -188,23 +188,23 @@ export class PantaData {
   async setUseWaterMark(useWaterMark: boolean) {
     await this.setConfigKey("watermark", useWaterMark);
   }
-  async setConfigKey<T extends keyof PaintConfig>(
+  async setConfigKey<T extends keyof PatinaConfig>(
     key: T,
-    value: PaintConfig[T],
+    value: PatinaConfig[T],
   ) {
-    const newConfig: PaintConfig = deepinCopy(this.config);
+    const newConfig: PatinaConfig = deepinCopy(this.config);
     newConfig[key] = value;
     await this.setConfig(newConfig);
   }
 
-  getConfigKey<T extends keyof PaintConfig>(
+  getConfigKey<T extends keyof PatinaConfig>(
     key: T,
-  ): PaintConfig[T] {
+  ): PatinaConfig[T] {
     return this.config[key];
   }
 
   // set config until running process is done
-  setConfig(config: PaintConfig): Promise<void> {
+  setConfig(config: PatinaConfig): Promise<void> {
     return new Promise((resolve, _) => {
       if (JSON.stringify(config) === JSON.stringify(this.config)) {
         resolve();
@@ -620,7 +620,7 @@ export class PantaData {
   }
 }
 
-export const defaultConfig: PaintConfig = {
+export const defaultConfig: PatinaConfig = {
   rand: false,
   preview: true,
   previewWidth: 400,
@@ -640,7 +640,7 @@ export const defaultConfig: PaintConfig = {
   green: 0.5,
   gy: 0.5,
   convoluteName: "sauna",
-  greenDeepth: 10,
+  greenTimes: 10,
   usePop: true,
   popDim: 4,
   quality: 80,

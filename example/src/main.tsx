@@ -4,9 +4,14 @@ import { useRef, useState } from "preact/hooks";
 
 import styled, { AttributeGroup } from "styled-components-deno";
 
-import { defaultConfig, PantaData } from "@nobody/patina";
+import { PantaData } from "@nobody/patina";
 import { CtrlBox, ctrlBox } from "../components/ControlBox.tsx";
 import { App } from "../components/App.tsx";
+import {
+  getCookie as getStorageCookie,
+  getInitConfig,
+  updateCookie,
+} from "../function/webcookie.ts";
 
 const OutputBox = styled.div`
   overflow: hidden;
@@ -63,7 +68,9 @@ const readFileToURl = (file: File, onOver: (src: string) => void) => {
   reader.readAsDataURL(file);
 };
 
-const paintaData = new PantaData(defaultConfig);
+const initConfig = getStorageCookie();
+
+const paintaData = new PantaData(getInitConfig(initConfig));
 paintaData.setImageSrc("./static/images/totoro-avatar.jpg");
 const form = document.createElement("form");
 const input = document.createElement("input");
@@ -86,6 +93,7 @@ function ImagePreview() {
   const [isGreen, setGreen] = useState(paintaData.isGreen);
   const [isPop, setPop] = useState(paintaData.isPop);
   const [useWaterMark, setUseWaterMark] = useState(paintaData.useWaterMark);
+  const [yearsAgo, setYearsAgo] = useState(paintaData.greenTimes);
 
   const loaded = async () => {
     try {
@@ -133,6 +141,8 @@ function ImagePreview() {
     const isGreen = e.currentTarget.checked;
     paintaData.setIsGreen(isGreen);
     setGreen(isGreen);
+    initConfig.green = isGreen;
+    updateCookie(initConfig);
     await loaded();
   };
   const onWaterMarkChanged = async (
@@ -140,7 +150,19 @@ function ImagePreview() {
   ) => {
     const isWaterMark = e.currentTarget.checked;
     paintaData.setUseWaterMark(isWaterMark);
+    initConfig.waterMark = isWaterMark;
+    updateCookie(initConfig);
     setUseWaterMark(isWaterMark);
+    await loaded();
+  };
+  const onYearsChanged = async (
+    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+  ) => {
+    const step = parseInt(e.currentTarget.value);
+    paintaData.setGreenTimes(step);
+    initConfig.yearsAgo = step;
+    updateCookie(initConfig);
+    setYearsAgo(step);
     await loaded();
   };
   const onPopChanged = async (
@@ -149,6 +171,8 @@ function ImagePreview() {
     const isPop = e.currentTarget.checked;
     paintaData.setIsPop(isPop);
     setPop(isPop);
+    initConfig.usePop = isPop;
+    updateCookie(initConfig);
     await loaded();
   };
   const resetDownloadName = () => {
@@ -207,6 +231,21 @@ function ImagePreview() {
             Pop
           </label>
         </InputBox>
+        {!isPop &&
+          (
+            <InputBox>
+              <h4>YearsAgo</h4>
+              <input
+                type="range"
+                min={1}
+                max={100}
+                step={1}
+                value={yearsAgo}
+                onChange={onYearsChanged}
+              />
+              {yearsAgo}
+            </InputBox>
+          )}
       </CtrlBox>
     </App>
   );
