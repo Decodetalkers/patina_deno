@@ -9,7 +9,7 @@
     "preact": "npm:preact@^10.26.4",
     "react": "npm:react@^19.0.0",
     "styled-components-deno": "jsr:@nobody/styled-components-deno@^0.10.1",
-    "@nobody/tananoni": "jsr:@nobody/tananoni@^0.4.9"
+    "@nobody/tananoni": "jsr:@nobody/tananoni@^0.5.0"
   },
   "tasks": {
     "start": "deno run -A build.ts",
