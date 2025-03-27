@@ -7,7 +7,6 @@ export type Cookie = {
 };
 
 export function getCookie(): Cookie {
-  console.log(document.cookie);
   try {
     return JSON.parse(document.cookie);
   } catch (_) {
@@ -37,7 +36,6 @@ export function getInitConfig(initConfig: Cookie = {}): PatinaConfig {
     config.usePop = cookieConfig.usePop;
   }
 
-  console.log(config);
   return config;
 }
 
