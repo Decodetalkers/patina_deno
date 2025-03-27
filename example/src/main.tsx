@@ -244,7 +244,7 @@ function ImagePreview() {
   return (
     <App dataRunning={running}>
       <header>
-        <h1>Plazma, Picture from ancient time</h1>
+        <h1>Plazma, Pictures from ancient time</h1>
         <p>Make the emoticons have a vintage look</p>
       </header>
       <OutputBox>
