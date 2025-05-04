@@ -1588,21 +1588,20 @@ var OutputBox = mod_default.div`
     display: block;
     object-fit: contain;
   }
-  @media(min-width:820px) {
+  @media (min-width: 820px) {
     img {
       float: left;
       width: 50%;
       max-width: 500px;
       max-height: 500px;
-
     }
   }
-  @media(max-width:820px) {
+  @media (max-width: 820px) {
     img {
       margin: 0 auto;
     }
     .source-image {
-      display: none
+      display: none;
     }
   }
 `;
