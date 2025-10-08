@@ -1027,7 +1027,7 @@ var PantaData = class {
     return this.getConfigKey("userNames");
   }
   /**
-   * Get if rand is eanbled
+   * Get if rand is enabled
    */
   get randEnabled() {
     return this.getConfigKey("rand");
