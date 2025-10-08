@@ -209,7 +209,7 @@ export class PantaData {
   }
 
   /**
-   * Get if rand is eanbled
+   * Get if rand is enabled
    */
   get randEnabled(): boolean {
     return this.getConfigKey("rand");
