@@ -1,11 +1,11 @@
-import { JSX, render } from "preact";
+import { render, TargetedEvent } from "preact";
 
 import { useRef, useState } from "preact/hooks";
 
-import styled, { AttributeGroup } from "styled-components-deno";
+import styled from "styled-components-deno";
 
 import { PantaData } from "@nobody/patina";
-import { CtrlBox, ctrlBox } from "../components/ControlBox.tsx";
+import { CtrlBox } from "../components/ControlBox.tsx";
 import { App } from "../components/App.tsx";
 import {
   getCookie as getStorageCookie,
@@ -39,19 +39,6 @@ const OutputBox = styled.div`
 const InputBox = styled.div`
   padding: 4px 0px;
 `;
-
-const appKeys = [`data-running="true"`] as const;
-
-const appStyle = new AttributeGroup(appKeys);
-
-appStyle.setCSS('data-running="true"')`
-  cursor: wait;
-  ${ctrlBox["ctrl-box"]} {
-    pointer-events: none
-  }
-`;
-
-appStyle.generate();
 
 const mount = document.getElementById("mount");
 const isImageRegex = /^image\/(.+)$/;
@@ -149,7 +136,7 @@ function ImagePreview() {
   };
 
   const onGreenChanged = async (
-    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+    e: TargetedEvent<HTMLInputElement, Event>,
   ) => {
     if (paintaData.isRunning) {
       return;
@@ -162,7 +149,7 @@ function ImagePreview() {
     await reload();
   };
   const onWaterMarkChanged = async (
-    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+    e: TargetedEvent<HTMLInputElement, Event>,
   ) => {
     const isWaterMark = e.currentTarget.checked;
     paintaData.setUseWaterMark(isWaterMark);
@@ -172,7 +159,7 @@ function ImagePreview() {
     await reload();
   };
   const onYearsChanged = async (
-    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+    e: TargetedEvent<HTMLInputElement, Event>,
   ) => {
     if (paintaData.isRunning) {
       return;
@@ -185,7 +172,7 @@ function ImagePreview() {
     await reload();
   };
   const onPopDimChanged = async (
-    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+    e: TargetedEvent<HTMLInputElement, Event>,
   ) => {
     if (paintaData.isRunning) {
       return;
@@ -198,7 +185,7 @@ function ImagePreview() {
     await reload();
   };
   const onGreenStepChanged = async (
-    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+    e: TargetedEvent<HTMLInputElement, Event>,
   ) => {
     if (paintaData.isRunning) {
       return;
@@ -213,7 +200,7 @@ function ImagePreview() {
     await reload();
   };
   const onQualityChanged = async (
-    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+    e: TargetedEvent<HTMLInputElement, Event>,
   ) => {
     if (paintaData.isRunning) {
       return;
@@ -226,7 +213,7 @@ function ImagePreview() {
     await reload();
   };
   const onPopChanged = async (
-    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+    e: TargetedEvent<HTMLInputElement, Event>,
   ) => {
     if (paintaData.isRunning) {
       return;
@@ -239,7 +226,7 @@ function ImagePreview() {
     await reload();
   };
   const onRandChanged = async (
-    e: JSX.TargetedEvent<HTMLInputElement, Event>,
+    e: TargetedEvent<HTMLInputElement, Event>,
   ) => {
     if (paintaData.isRunning) {
       return;
@@ -252,7 +239,7 @@ function ImagePreview() {
     await reload();
   };
   const onUserNamesChanged = (
-    e: JSX.TargetedEvent<HTMLTextAreaElement, Event>,
+    e: TargetedEvent<HTMLTextAreaElement, Event>,
   ) => {
     const originNames = e.currentTarget.value;
     const names = originNames.split("\n");

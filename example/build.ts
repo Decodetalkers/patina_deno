@@ -38,9 +38,7 @@ const route = new Route()
       .withHotReload(!release_mode),
   )
   .withHotReload(!release_mode);
-const webgen = new GenWebsite()
-  .withLogLevel("info")
-  .withImportSource("npm:preact");
+const webgen = new GenWebsite();
 
 await webgen.generateWebsite(route);
 

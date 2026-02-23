@@ -15,7 +15,6 @@ export function getCookie(): Cookie {
   try {
     return JSON.parse(document.cookie);
   } catch (_) {
-    console.log("error?");
     return {};
   }
 }
