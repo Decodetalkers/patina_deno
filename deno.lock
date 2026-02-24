@@ -2,7 +2,7 @@
   "version": "5",
   "specifiers": {
     "jsr:@luca/esbuild-deno-loader@~0.11.1": "0.11.1",
-    "jsr:@nobody/styled-components-deno@~0.11.1": "0.11.1",
+    "jsr:@nobody/styled-components-deno@~0.11.3": "0.11.3",
     "jsr:@nobody/tananoni@~0.6.0-beta1": "0.6.0-beta1",
     "jsr:@std/assert@^1.0.14": "1.0.19",
     "jsr:@std/assert@^1.0.19": "1.0.19",
@@ -27,7 +27,6 @@
     "jsr:@std/path@^1.1.4": "1.1.4",
     "jsr:@std/streams@^1.0.17": "1.0.17",
     "npm:esbuild@~0.27.3": "0.27.3",
-    "npm:preact@*": "10.28.4",
     "npm:preact@^10.28.4": "10.28.4",
     "npm:react@^19.2.4": "19.2.4"
   },
@@ -40,10 +39,10 @@
         "jsr:@std/path@^1.0.6"
       ]
     },
-    "@nobody/styled-components-deno@0.11.1": {
-      "integrity": "aee5f8db4b7af9ef1ded78cd5a6db716b5d7ee8559f82eba59b525042dee58e6",
+    "@nobody/styled-components-deno@0.11.3": {
+      "integrity": "46c47b5f5109ebca873789f11a83d1c43d2d46fa30138587057b7c7a2b6fa3de",
       "dependencies": [
-        "npm:preact@^10.28.4"
+        "npm:preact"
       ]
     },
     "@nobody/tananoni@0.6.0-beta1": {
@@ -321,7 +320,7 @@
       "example": {
         "dependencies": [
           "jsr:@luca/esbuild-deno-loader@~0.11.1",
-          "jsr:@nobody/styled-components-deno@~0.11.1",
+          "jsr:@nobody/styled-components-deno@~0.11.3",
           "jsr:@nobody/tananoni@~0.6.0-beta1",
           "jsr:@std/async@^1.2.0",
           "jsr:@std/cli@^1.0.28",
